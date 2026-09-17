@@ -800,14 +800,95 @@
       </div>
     </div>
 
+    <!-- MODAL BỘ PHÁT NHẠC ONLINE (YOUTUBE / SOUNDCLOUD / MP3) -->
+    <div class="modal-overlay hidden" id="onlineMusicModal">
+      <div class="online-music-modal-card glass-panel">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="title-icon">🎵</span>
+            <span>BỘ PHÁT NHẠC NỀN AUDITION (YOUTUBE / SOUNDCLOUD / MP3)</span>
+          </div>
+          <button class="btn-modal-close" id="btnCloseOnlineMusic">✕</button>
+        </div>
+
+        <div class="online-music-body">
+          <p class="online-music-desc">
+            Dán bất kỳ link <strong>YouTube</strong> (video/music/shorts), <strong>SoundCloud</strong> hoặc link <strong>MP3</strong> trực tiếp để phát nhạc nền tăng hứng khởi khi luyện gõ phím!
+          </p>
+
+          <div class="online-music-input-group">
+            <input 
+              type="text" 
+              id="onlineMusicUrlInput" 
+              class="online-music-input" 
+              placeholder="Dán link YouTube (youtu.be/... hoặc youtube.com/watch?v=...) hoặc SoundCloud vào đây..."
+              spellcheck="false"
+            />
+            <button class="btn-play-music-primary" id="btnPlayOnlineMusic">
+              ▶ PHÁT NHẠC
+            </button>
+          </div>
+
+          <div class="online-music-status-box" id="onlineMusicStatusBox">
+            <span class="status-dot"></span>
+            <span id="onlineMusicStatusText">Chưa có bài hát nào được nạp. Hãy dán link hoặc chọn gợi ý bên dưới!</span>
+          </div>
+
+          <!-- Quick Presets (Gợi ý nhạc hay 1-click) -->
+          <div class="music-presets-header">
+            <span>🔥 GỢI Ý NHẠC AUDITION & TẬP TRUNG HAY NHẤT (BẤM ĐỂ PHÁT NGAY):</span>
+          </div>
+          <div class="music-presets-grid">
+            <button class="preset-music-btn" data-url="https://www.youtube.com/watch?v=kY1x8uT211Q" data-title="Audition Sweet Lies (130 BPM)">
+              <span>💃 <strong>Audition Sweet Lies</strong></span>
+              <span class="preset-tag">130 BPM Sôi Động</span>
+            </button>
+            <button class="preset-music-btn" data-url="https://www.youtube.com/watch?v=jfKfPfyJRdk" data-title="Lofi Hip Hop Chill / Study Beats">
+              <span>☕ <strong>Lofi Chill Beats</strong></span>
+              <span class="preset-tag">Học Tập / Tập Trung</span>
+            </button>
+            <button class="preset-music-btn" data-url="https://www.youtube.com/watch?v=4xDzrJKXOOY" data-title="Synthwave Cyberpunk Energy">
+              <span>⚡ <strong>Synthwave Energy</strong></span>
+              <span class="preset-tag">Nhịp Độ Audition</span>
+            </button>
+            <button class="preset-music-btn" data-url="https://www.youtube.com/watch?v=1fueZCTYkpA" data-title="Peaceful Piano Focus">
+              <span>🎹 <strong>Piano Thư Giãn</strong></span>
+              <span class="preset-tag">Tập Trung Cao Độ</span>
+            </button>
+            <button class="preset-music-btn" data-url="https://www.youtube.com/watch?v=LqUoT4pM4Zc" data-title="Please Tell Me Why (Audition)">
+              <span>🎧 <strong>Please Tell Me Why</strong></span>
+              <span class="preset-tag">Free Style Classic</span>
+            </button>
+            <button class="preset-music-btn" data-url="https://www.youtube.com/watch?v=5qap5aO4i9A" data-title="Lofi Hip Hop Radio 24/7">
+              <span>📻 <strong>Lofi Girl Radio 24/7</strong></span>
+              <span class="preset-tag">Live Stream 24/7</span>
+            </button>
+          </div>
+
+          <!-- Tải từ máy tính (Fallback) -->
+          <div class="local-upload-fallback">
+            <span>📁 Hoặc dùng file MP3 từ máy của bạn: </span>
+            <label for="customAudioInput" class="btn-upload-mp3-label">
+              Chọn file .mp3 từ máy tính
+            </label>
+            <input type="file" id="customAudioInput" accept="audio/*" style="display: none;">
+          </div>
+        </div>
+
+        <div class="modal-footer online-music-footer">
+          <button class="btn-action-secondary" id="btnStopOnlineMusic">⏹ DỪNG PHÁT</button>
+          <button class="btn-action-primary" id="btnSaveCloseOnlineMusic">✓ XONG & ĐÓNG</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Bottom Control Bar (Tải Nhạc Custom, Tải File Meme, Âm lượng) -->
     <footer class="bottom-bar glass-panel">
       <div class="bottom-left">
-        <!-- Custom Audio Input -->
-        <label for="customAudioInput" class="btn-custom-tool">
-          🎵 TẢI NHẠC (.MP3)
-        </label>
-        <input type="file" id="customAudioInput" accept="audio/*" style="display: none;">
+        <!-- Nút Mở Modal Nhạc Nền Online -->
+        <button class="btn-custom-tool btn-music-online" id="btnOpenOnlineMusic" title="Dán link YouTube, SoundCloud hoặc MP3 online">
+          🎵 NHẠC ONLINE (YOUTUBE / SOUNDCLOUD)
+        </button>
 
         <!-- Custom Meme Files Upload -->
         <label for="customMemeFiles" class="btn-custom-tool btn-meme-upload">
@@ -819,6 +900,12 @@
       </div>
 
       <div class="bottom-right">
+        <!-- Badge bài hát đang phát -->
+        <div class="current-track-pill" id="currentTrackPill" title="Bấm để mở bộ phát nhạc">
+          <span class="music-wave-dot"></span>
+          <span class="current-track-name" id="currentTrackName">Nhạc: Chưa phát</span>
+        </div>
+
         <button class="btn-ctrl" id="btnAudioToggle">🔊 BẬT / TẮT NHẠC</button>
         <div class="volume-box">
           <span>🔈</span>
@@ -826,10 +913,16 @@
         </div>
       </div>
 
-      <!-- Hidden Audio Element for Custom Music -->
+      <!-- Hidden Media Elements for Background Music -->
       <audio id="customAudioElem" loop preload="auto"></audio>
+      <div id="youtubePlayerContainer" class="hidden-player-box"></div>
+      <div id="soundcloudPlayerContainer" class="hidden-player-box"></div>
     </footer>
   </div>
+
+  <!-- External Media APIs for Background Music (YouTube & SoundCloud) -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="https://w.soundcloud.com/player/api.js"></script>
 
   <!-- Script Modules -->
   <script src="memes.js"></script>

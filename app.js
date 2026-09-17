@@ -53,6 +53,13 @@ class UnifiedTypingGame {
     this.autoDismissDuration = 1600;
     this.audioCtx = null;
     this.bgmPlaying = false;
+    this.currentMusicType = "none"; // 'youtube', 'soundcloud', 'html5', 'none'
+    this.ytPlayer = null;
+    this.scWidget = null;
+    this.isYtReady = false;
+    this.currentTrackTitle = "Chưa phát";
+    this.bgmVolume = 0.7;
+    this.pendingYtVideoId = null;
 
     // 7. Text-To-Speech (Web Speech API)
     this.speechSynth = window.speechSynthesis;
@@ -62,6 +69,7 @@ class UnifiedTypingGame {
     // 8. Bootstrap App
     this.initMemeLibrary();
     this.initAudioEngine();
+    this.initOnlineMusic();
     this.initTensesGuide();
     this.initEventListeners();
     this.switchPhase(this.currentPhase);
@@ -291,12 +299,23 @@ class UnifiedTypingGame {
       btnLoadSampleDeck: document.getElementById("btnLoadSampleDeck"),
       btnClearCustomDeck: document.getElementById("btnClearCustomDeck"),
 
-      // Media Controls
+      // Media & Online Music Controls
       customAudioInput: document.getElementById("customAudioInput"),
       customAudioElem: document.getElementById("customAudioElem"),
       customMemeFiles: document.getElementById("customMemeFiles"),
       btnAudioToggle: document.getElementById("btnAudioToggle"),
-      volSlider: document.getElementById("volSlider")
+      volSlider: document.getElementById("volSlider"),
+      btnOpenOnlineMusic: document.getElementById("btnOpenOnlineMusic"),
+      onlineMusicModal: document.getElementById("onlineMusicModal"),
+      btnCloseOnlineMusic: document.getElementById("btnCloseOnlineMusic"),
+      onlineMusicUrlInput: document.getElementById("onlineMusicUrlInput"),
+      btnPlayOnlineMusic: document.getElementById("btnPlayOnlineMusic"),
+      btnStopOnlineMusic: document.getElementById("btnStopOnlineMusic"),
+      btnSaveCloseOnlineMusic: document.getElementById("btnSaveCloseOnlineMusic"),
+      onlineMusicStatusBox: document.getElementById("onlineMusicStatusBox"),
+      onlineMusicStatusText: document.getElementById("onlineMusicStatusText"),
+      currentTrackPill: document.getElementById("currentTrackPill"),
+      currentTrackName: document.getElementById("currentTrackName")
     };
   }
 
@@ -332,9 +351,9 @@ class UnifiedTypingGame {
 
     // 1. TẮT NHẠC NỀN TỨC THỜI TRONG LÚC PHÁT ÂM CÂU
     let wasMusicPlaying = false;
-    if (this.bgmPlaying && this.dom.customAudioElem && !this.dom.customAudioElem.paused) {
+    if (this.bgmPlaying) {
       wasMusicPlaying = true;
-      this.dom.customAudioElem.pause();
+      this.pauseBgmTemporary();
     }
 
     this.speechSynth.cancel(); // Dừng câu trước nếu đang đọc dở
@@ -349,8 +368,8 @@ class UnifiedTypingGame {
 
     // Hàm khôi phục lại nhạc nền sau khi đọc xong hoặc có lỗi
     const restoreMusic = () => {
-      if (wasMusicPlaying && this.bgmPlaying && this.dom.customAudioElem && this.dom.customAudioElem.src) {
-        this.dom.customAudioElem.play().catch(() => {});
+      if (wasMusicPlaying && this.bgmPlaying) {
+        this.resumeBgmTemporary();
       }
     };
 
@@ -2489,6 +2508,14 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
         return;
       }
 
+      // 2.5. Nếu Modal Nhạc Online đang mở ➔ Phím ESC đóng modal
+      if (this.dom.onlineMusicModal && !this.dom.onlineMusicModal.classList.contains("hidden")) {
+        if (e.key === "Escape") {
+          this.dom.onlineMusicModal.classList.add("hidden");
+        }
+        return;
+      }
+
       // 3. Nếu Modal AI Generator đang mở ➔ Phím ESC đóng modal
       if (!this.dom.aiGeneratorModal.classList.contains("hidden")) {
         if (e.key === "Escape") {
@@ -2732,43 +2759,384 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       }
     });
 
-    // Custom Audio Upload
-    this.dom.customAudioInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const url = URL.createObjectURL(file);
-        this.dom.customAudioElem.src = url;
-        const vol = parseFloat(this.dom.volSlider.value) || 0.7;
-        this.dom.customAudioElem.volume = vol;
-        this.dom.customAudioElem.play();
-        this.bgmPlaying = true;
-        this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
-      }
-    });
-
-    // Audio BGM Toggle
-    this.dom.btnAudioToggle.addEventListener("click", () => {
-      if (this.audioCtx && this.audioCtx.state === 'suspended') {
-        this.audioCtx.resume();
-      }
-      if (this.bgmPlaying) {
-        this.dom.customAudioElem.pause();
-        this.bgmPlaying = false;
-        this.dom.btnAudioToggle.textContent = "▶ BẬT NHẠC";
-      } else {
-        if (this.dom.customAudioElem.src) {
-          this.dom.customAudioElem.play();
+    // Custom Audio Upload (Local MP3 File)
+    if (this.dom.customAudioInput) {
+      this.dom.customAudioInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          const fileName = file.name.replace(/\.[^/.]+$/, "");
+          this.playOnlineMusic(url, `MP3: ${fileName}`);
         }
-        this.bgmPlaying = true;
-        this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
-      }
+      });
+    }
+
+    // Online Music Modal Triggers
+    if (this.dom.btnOpenOnlineMusic) {
+      this.dom.btnOpenOnlineMusic.addEventListener("click", () => {
+        this.dom.onlineMusicModal.classList.remove("hidden");
+      });
+    }
+    if (this.dom.currentTrackPill) {
+      this.dom.currentTrackPill.addEventListener("click", () => {
+        this.dom.onlineMusicModal.classList.remove("hidden");
+      });
+    }
+    if (this.dom.btnCloseOnlineMusic) {
+      this.dom.btnCloseOnlineMusic.addEventListener("click", () => {
+        this.dom.onlineMusicModal.classList.add("hidden");
+      });
+    }
+    if (this.dom.btnSaveCloseOnlineMusic) {
+      this.dom.btnSaveCloseOnlineMusic.addEventListener("click", () => {
+        this.dom.onlineMusicModal.classList.add("hidden");
+      });
+    }
+    if (this.dom.onlineMusicModal) {
+      this.dom.onlineMusicModal.addEventListener("click", (e) => {
+        if (e.target === this.dom.onlineMusicModal) {
+          this.dom.onlineMusicModal.classList.add("hidden");
+        }
+      });
+    }
+
+    // Play Online Music Button
+    if (this.dom.btnPlayOnlineMusic) {
+      this.dom.btnPlayOnlineMusic.addEventListener("click", () => {
+        const url = this.dom.onlineMusicUrlInput ? this.dom.onlineMusicUrlInput.value.trim() : "";
+        if (url) {
+          this.playOnlineMusic(url);
+        } else {
+          if (this.dom.onlineMusicStatusText) {
+            this.dom.onlineMusicStatusText.innerHTML = "⚠️ Vui lòng dán link YouTube, SoundCloud hoặc MP3 trước!";
+          }
+        }
+      });
+    }
+
+    // Stop Online Music Button
+    if (this.dom.btnStopOnlineMusic) {
+      this.dom.btnStopOnlineMusic.addEventListener("click", () => {
+        this.stopAllMusic();
+      });
+    }
+
+    // Preset Buttons Click (Gợi ý nhạc 1-click)
+    const presetButtons = document.querySelectorAll(".preset-music-btn");
+    presetButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const url = btn.dataset.url;
+        const title = btn.dataset.title || btn.textContent.trim();
+        if (this.dom.onlineMusicUrlInput) {
+          this.dom.onlineMusicUrlInput.value = url;
+        }
+        this.playOnlineMusic(url, title);
+      });
     });
 
-    // Volume Slider
+    // Audio BGM Toggle (Bật / Tắt Nhạc Nền)
+    this.dom.btnAudioToggle.addEventListener("click", () => {
+      this.toggleBgm();
+    });
+
+    // Volume Slider (Đồng bộ âm lượng cho cả YouTube, SoundCloud & MP3)
     this.dom.volSlider.addEventListener("input", (e) => {
       const val = parseFloat(e.target.value);
-      this.dom.customAudioElem.volume = val;
+      this.setBgmVolume(val);
     });
+  }
+
+  // --- ONLINE BACKGROUND MUSIC MANAGER (YOUTUBE / SOUNDCLOUD / MP3) ---
+  initOnlineMusic() {
+    // 1. Phục hồi volume đã lưu
+    const savedVol = localStorage.getItem("antigravity_bgm_volume");
+    if (savedVol !== null) {
+      this.bgmVolume = parseFloat(savedVol);
+      if (this.dom.volSlider) this.dom.volSlider.value = this.bgmVolume;
+    }
+
+    // 2. Phục hồi bài hát đã lưu
+    const savedUrl = localStorage.getItem("antigravity_bgm_url");
+    const savedTitle = localStorage.getItem("antigravity_bgm_title");
+    if (savedUrl && this.dom.onlineMusicUrlInput) {
+      this.dom.onlineMusicUrlInput.value = savedUrl;
+    }
+    if (savedTitle && this.dom.currentTrackName) {
+      this.currentTrackTitle = savedTitle;
+      this.dom.currentTrackName.textContent = savedTitle;
+    }
+
+    // 3. Đăng ký hook cho YouTube API sẵn sàng
+    window.onYouTubeIframeAPIReady = () => {
+      this.isYtReady = true;
+      if (this.pendingYtVideoId) {
+        this.createOrLoadYouTubePlayer(this.pendingYtVideoId);
+        this.pendingYtVideoId = null;
+      }
+    };
+  }
+
+  extractYouTubeId(url) {
+    if (!url) return null;
+    const reg = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/)|music\.youtube\.com\/watch\?v=)([\w-]{11})/;
+    const match = url.match(reg);
+    return match ? match[1] : null;
+  }
+
+  isSoundCloudUrl(url) {
+    return url && (url.includes("soundcloud.com/") || url.includes("on.soundcloud.com/"));
+  }
+
+  playOnlineMusic(rawUrl, customTitle = null) {
+    if (!rawUrl) return;
+    const url = rawUrl.trim();
+    if (!url) return;
+
+    if (this.audioCtx && this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume();
+    }
+
+    const ytId = this.extractYouTubeId(url);
+    const isSc = this.isSoundCloudUrl(url);
+
+    let detectedTitle = customTitle;
+
+    if (ytId) {
+      // --- XỬ LÝ YOUTUBE ---
+      if (!detectedTitle) detectedTitle = `YouTube (${ytId})`;
+      this.currentMusicType = "youtube";
+      this.pauseHtml5Audio();
+      this.pauseSoundCloud();
+      this.playYouTube(ytId);
+    } else if (isSc) {
+      // --- XỬ LÝ SOUNDCLOUD ---
+      if (!detectedTitle) detectedTitle = "SoundCloud Track";
+      this.currentMusicType = "soundcloud";
+      this.pauseHtml5Audio();
+      this.pauseYouTube();
+      this.playSoundCloud(url);
+    } else {
+      // --- XỬ LÝ LINK MP3 / AUDIO STREAM ---
+      if (!detectedTitle) {
+        const parts = url.split("/");
+        detectedTitle = parts[parts.length - 1] || "Online Audio Stream";
+      }
+      this.currentMusicType = "html5";
+      this.pauseYouTube();
+      this.pauseSoundCloud();
+      this.playHtml5Audio(url);
+    }
+
+    this.currentTrackTitle = detectedTitle;
+    this.bgmPlaying = true;
+    if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+    if (this.dom.currentTrackName) this.dom.currentTrackName.textContent = detectedTitle;
+    if (this.dom.onlineMusicStatusText) {
+      this.dom.onlineMusicStatusText.innerHTML = `🟢 Đang phát: <strong>${detectedTitle}</strong>`;
+    }
+
+    localStorage.setItem("antigravity_bgm_url", url);
+    localStorage.setItem("antigravity_bgm_title", detectedTitle);
+  }
+
+  playYouTube(videoId) {
+    if (!window.YT || !window.YT.Player) {
+      this.pendingYtVideoId = videoId;
+      return;
+    }
+    this.createOrLoadYouTubePlayer(videoId);
+  }
+
+  createOrLoadYouTubePlayer(videoId) {
+    const container = document.getElementById("youtubePlayerContainer");
+    if (!container) return;
+
+    if (this.ytPlayer && typeof this.ytPlayer.loadVideoById === "function") {
+      try {
+        this.ytPlayer.loadVideoById({ videoId: videoId });
+        this.ytPlayer.setVolume(this.bgmVolume * 100);
+        this.ytPlayer.playVideo();
+        return;
+      } catch (err) {
+        console.warn("YouTube player reload error:", err);
+      }
+    }
+
+    container.innerHTML = '<div id="ytIframeSlot"></div>';
+    try {
+      this.ytPlayer = new YT.Player('ytIframeSlot', {
+        height: '200',
+        width: '200',
+        videoId: videoId,
+        playerVars: {
+          autoplay: 1,
+          loop: 1,
+          playlist: videoId,
+          controls: 0,
+          playsinline: 1
+        },
+        events: {
+          onReady: (event) => {
+            event.target.setVolume(this.bgmVolume * 100);
+            event.target.playVideo();
+          },
+          onStateChange: (event) => {
+            if (event.data === YT.PlayerState.PLAYING) {
+              this.bgmPlaying = true;
+              if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+            }
+          },
+          onError: (e) => {
+            if (this.dom.onlineMusicStatusText) {
+              this.dom.onlineMusicStatusText.innerHTML = `⚠️ Video này có thể bị chặn nhúng hoặc lỗi bản quyền. Hãy thử link khác!`;
+            }
+          }
+        }
+      });
+    } catch (e) {
+      console.warn("YouTube player init error:", e);
+    }
+  }
+
+  playSoundCloud(trackUrl) {
+    const container = document.getElementById("soundcloudPlayerContainer");
+    if (!container) return;
+
+    container.innerHTML = `<iframe id="scWidgetIframe" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(trackUrl)}&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>`;
+    
+    setTimeout(() => {
+      const iframe = document.getElementById("scWidgetIframe");
+      if (iframe && window.SC && window.SC.Widget) {
+        try {
+          this.scWidget = window.SC.Widget(iframe);
+          this.scWidget.bind(window.SC.Widget.Events.READY, () => {
+            this.scWidget.setVolume(this.bgmVolume * 100);
+            this.scWidget.play();
+          });
+        } catch (e) {
+          console.warn("SoundCloud widget err:", e);
+        }
+      }
+    }, 600);
+  }
+
+  playHtml5Audio(url) {
+    if (!this.dom.customAudioElem) return;
+    this.dom.customAudioElem.src = url;
+    this.dom.customAudioElem.volume = this.bgmVolume;
+    this.dom.customAudioElem.play().catch(e => {
+      console.warn("HTML5 audio playback err:", e);
+    });
+  }
+
+  pauseYouTube() {
+    if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === "function") {
+      try { this.ytPlayer.pauseVideo(); } catch (e) {}
+    }
+  }
+
+  pauseSoundCloud() {
+    if (this.scWidget && typeof this.scWidget.pause === "function") {
+      try { this.scWidget.pause(); } catch (e) {}
+    }
+  }
+
+  pauseHtml5Audio() {
+    if (this.dom.customAudioElem) {
+      this.dom.customAudioElem.pause();
+    }
+  }
+
+  pauseBgmTemporary() {
+    if (this.currentMusicType === "youtube") {
+      this.pauseYouTube();
+    } else if (this.currentMusicType === "soundcloud") {
+      this.pauseSoundCloud();
+    } else if (this.currentMusicType === "html5") {
+      this.pauseHtml5Audio();
+    }
+  }
+
+  resumeBgmTemporary() {
+    if (this.currentMusicType === "youtube") {
+      if (this.ytPlayer && typeof this.ytPlayer.playVideo === "function") {
+        try { this.ytPlayer.playVideo(); } catch (e) {}
+      }
+    } else if (this.currentMusicType === "soundcloud") {
+      if (this.scWidget && typeof this.scWidget.play === "function") {
+        try { this.scWidget.play(); } catch (e) {}
+      }
+    } else if (this.currentMusicType === "html5") {
+      if (this.dom.customAudioElem && this.dom.customAudioElem.src) {
+        this.dom.customAudioElem.play().catch(() => {});
+      }
+    }
+  }
+
+  stopAllMusic() {
+    this.pauseYouTube();
+    this.pauseSoundCloud();
+    this.pauseHtml5Audio();
+    this.bgmPlaying = false;
+    if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "▶ BẬT NHẠC";
+    if (this.dom.onlineMusicStatusText) {
+      this.dom.onlineMusicStatusText.innerHTML = "⏹ Đã dừng phát nhạc.";
+    }
+  }
+
+  toggleBgm() {
+    if (this.audioCtx && this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume();
+    }
+
+    if (this.bgmPlaying) {
+      this.stopAllMusic();
+    } else {
+      if (this.currentMusicType === "youtube") {
+        if (this.ytPlayer && typeof this.ytPlayer.playVideo === "function") {
+          this.ytPlayer.playVideo();
+          this.bgmPlaying = true;
+          this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+          return;
+        }
+      } else if (this.currentMusicType === "soundcloud") {
+        if (this.scWidget && typeof this.scWidget.play === "function") {
+          this.scWidget.play();
+          this.bgmPlaying = true;
+          this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+          return;
+        }
+      } else if (this.currentMusicType === "html5") {
+        if (this.dom.customAudioElem && this.dom.customAudioElem.src) {
+          this.dom.customAudioElem.play().catch(() => {});
+          this.bgmPlaying = true;
+          this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+          return;
+        }
+      }
+
+      // Nếu chưa có bài nào phát, thử lấy từ ô input hoặc mở modal
+      const val = this.dom.onlineMusicUrlInput ? this.dom.onlineMusicUrlInput.value.trim() : "";
+      if (val) {
+        this.playOnlineMusic(val, this.currentTrackTitle !== "Chưa phát" ? this.currentTrackTitle : null);
+      } else {
+        if (this.dom.onlineMusicModal) this.dom.onlineMusicModal.classList.remove("hidden");
+      }
+    }
+  }
+
+  setBgmVolume(val) {
+    this.bgmVolume = val;
+    localStorage.setItem("antigravity_bgm_volume", val);
+    if (this.dom.customAudioElem) {
+      this.dom.customAudioElem.volume = val;
+    }
+    if (this.ytPlayer && typeof this.ytPlayer.setVolume === "function") {
+      try { this.ytPlayer.setVolume(val * 100); } catch (e) {}
+    }
+    if (this.scWidget && typeof this.scWidget.setVolume === "function") {
+      try { this.scWidget.setVolume(val * 100); } catch (e) {}
+    }
   }
 }
 
