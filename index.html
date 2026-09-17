@@ -908,21 +908,88 @@
         </div>
       </div>
 
-      <!-- Hidden Media Elements for Background Music -->
+      <!-- Audio element for HTML5 MP3 playback -->
       <audio id="customAudioElem" loop preload="auto"></audio>
-      <div id="youtubePlayerContainer" class="hidden-player-box"></div>
-      <div id="soundcloudPlayerContainer" class="hidden-player-box"></div>
 
-      <!-- Floating / Docked Spotify Player Widget -->
-      <div id="spotifyFloatingWidget" class="spotify-floating-widget hidden">
-        <div class="spotify-widget-header">
-          <div class="spotify-brand">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-            <span>SPOTIFY PLAYER</span>
+      <!-- Unified Floating Music Player Widget (YouTube, SoundCloud, Spotify, MP3) -->
+      <div id="floatingMusicWidget" class="floating-music-widget hidden">
+        <!-- Header Bar -->
+        <div class="floating-player-header">
+          <div class="player-source-brand" id="playerSourceBrand">
+            <span class="brand-icon" id="playerBrandIcon">🎵</span>
+            <span class="brand-name" id="playerBrandName">ONLINE MUSIC</span>
           </div>
-          <button type="button" id="btnCloseSpotifyWidget" class="spotify-widget-close" title="Ẩn khung player">✕</button>
+          <div class="player-header-title-box">
+            <span class="floating-track-title" id="floatingTrackTitle">Chưa phát bài hát nào</span>
+          </div>
+          <div class="player-header-actions">
+            <button type="button" id="btnToggleMinimizeWidget" class="btn-player-mini" title="Thu nhỏ / Mở rộng player">🗕</button>
+            <button type="button" id="btnCloseFloatingWidget" class="btn-player-mini" title="Ẩn khung player">✕</button>
+          </div>
         </div>
-        <div id="spotifyWidgetBody" class="spotify-widget-body"></div>
+
+        <!-- Video / Media Screen Area (Thân Player) -->
+        <div class="floating-player-screen" id="floatingPlayerScreen">
+          <!-- YouTube Video Container (16:9 view) -->
+          <div id="youtubePlayerContainer" class="player-media-slot"></div>
+          <!-- SoundCloud Widget Container -->
+          <div id="soundcloudPlayerContainer" class="player-media-slot hidden"></div>
+          <!-- Spotify Embed Container -->
+          <div id="spotifyPlayerContainer" class="player-media-slot hidden">
+            <div id="spotifyWidgetBody"></div>
+          </div>
+          <!-- HTML5 MP3 Visualizer -->
+          <div id="audioVisualizerSlot" class="player-media-slot hidden">
+            <div class="audio-wave-anim">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="audio-visualizer-name" id="audioVisualizerName">MP3 Audio Track</div>
+          </div>
+        </div>
+
+        <!-- Seek Scrubber & Controls (Khúc Tua Nhạc & Phím Điều Khiển) -->
+        <div class="floating-player-controls" id="floatingPlayerControls">
+          <!-- Seek Timeline Bar -->
+          <div class="player-seek-row">
+            <span class="seek-time-text" id="seekCurrentTime">00:00</span>
+            <div class="seek-slider-wrapper">
+              <div class="seek-progress-fill" id="seekProgressFill" style="width: 0%;"></div>
+              <input 
+                type="range" 
+                id="playerProgressBar" 
+                class="music-seek-slider" 
+                min="0" 
+                max="100" 
+                value="0" 
+                step="0.1"
+                title="Kéo thanh này để tua bài hát"
+              />
+            </div>
+            <span class="seek-time-text" id="seekTotalDuration">00:00</span>
+          </div>
+
+          <!-- Buttons Row: Tua lùi -10s, Play/Pause, Tua tới +10s, Volume mini -->
+          <div class="player-buttons-row">
+            <button type="button" class="btn-seek-step" id="btnSeekBackward" title="Tua lùi 10 giây (⏪ -10s)">
+              ⏪ -10s
+            </button>
+            <button type="button" class="btn-seek-play" id="btnSeekPlayToggle" title="Phát / Tạm dừng">
+              ▶
+            </button>
+            <button type="button" class="btn-seek-step" id="btnSeekForward" title="Tua tới 10 giây (⏩ +10s)">
+              +10s ⏩
+            </button>
+            <div class="mini-volume-dock">
+              <span>🔊</span>
+              <input type="range" id="widgetVolSlider" min="0" max="1" step="0.05" value="0.7" title="Âm lượng nhạc">
+            </div>
+          </div>
+
+          <!-- Spotify Notice (chỉ hiện khi nghe Spotify) -->
+          <div class="spotify-embed-notice hidden" id="spotifyEmbedNotice">
+            💡 <em>Spotify Embed cho nghe 30s preview nếu chưa đăng nhập. Bạn có thể đăng nhập Spotify trong khung player để nghe full bài, hoặc dùng YouTube / SoundCloud để nghe trọn vẹn không giới hạn!</em>
+          </div>
+        </div>
       </div>
     </footer>
   </div>

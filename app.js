@@ -62,6 +62,10 @@ class UnifiedTypingGame {
     this.currentTrackTitle = "Chưa phát";
     this.bgmVolume = 0.7;
     this.pendingYtVideoId = null;
+    this.currentTrackDuration = 0;
+    this.currentTrackTime = 0;
+    this.progressInterval = null;
+    this.isUserDraggingSeek = false;
     this.ttsUtteranceSeq = 0;
     this.activeUtterance = null;
     this.ttsResumeSafetyTimer = null;
@@ -320,7 +324,32 @@ class UnifiedTypingGame {
       onlineMusicStatusBox: document.getElementById("onlineMusicStatusBox"),
       onlineMusicStatusText: document.getElementById("onlineMusicStatusText"),
       currentTrackPill: document.getElementById("currentTrackPill"),
-      currentTrackName: document.getElementById("currentTrackName")
+      currentTrackName: document.getElementById("currentTrackName"),
+
+      // Unified Floating Music Player Elements
+      floatingMusicWidget: document.getElementById("floatingMusicWidget"),
+      playerSourceBrand: document.getElementById("playerSourceBrand"),
+      playerBrandIcon: document.getElementById("playerBrandIcon"),
+      playerBrandName: document.getElementById("playerBrandName"),
+      floatingTrackTitle: document.getElementById("floatingTrackTitle"),
+      btnToggleMinimizeWidget: document.getElementById("btnToggleMinimizeWidget"),
+      btnCloseFloatingWidget: document.getElementById("btnCloseFloatingWidget"),
+      floatingPlayerScreen: document.getElementById("floatingPlayerScreen"),
+      youtubePlayerContainer: document.getElementById("youtubePlayerContainer"),
+      soundcloudPlayerContainer: document.getElementById("soundcloudPlayerContainer"),
+      spotifyPlayerContainer: document.getElementById("spotifyPlayerContainer"),
+      audioVisualizerSlot: document.getElementById("audioVisualizerSlot"),
+      audioVisualizerName: document.getElementById("audioVisualizerName"),
+      floatingPlayerControls: document.getElementById("floatingPlayerControls"),
+      seekCurrentTime: document.getElementById("seekCurrentTime"),
+      playerProgressBar: document.getElementById("playerProgressBar"),
+      seekProgressFill: document.getElementById("seekProgressFill"),
+      seekTotalDuration: document.getElementById("seekTotalDuration"),
+      btnSeekBackward: document.getElementById("btnSeekBackward"),
+      btnSeekPlayToggle: document.getElementById("btnSeekPlayToggle"),
+      btnSeekForward: document.getElementById("btnSeekForward"),
+      widgetVolSlider: document.getElementById("widgetVolSlider"),
+      spotifyEmbedNotice: document.getElementById("spotifyEmbedNotice")
     };
   }
 
@@ -2905,12 +2934,70 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       });
     }
 
-    // Close Spotify Widget Button
-    const closeSpotifyBtn = document.getElementById("btnCloseSpotifyWidget");
-    if (closeSpotifyBtn) {
-      closeSpotifyBtn.addEventListener("click", () => {
-        const widget = document.getElementById("spotifyFloatingWidget");
-        if (widget) widget.classList.add("hidden");
+    // Floating Music Widget Controls (Thu nhỏ, Ẩn/Hiện, Scrubber Tua & Mini Volume)
+    if (this.dom.btnToggleMinimizeWidget) {
+      this.dom.btnToggleMinimizeWidget.addEventListener("click", () => {
+        if (this.dom.floatingMusicWidget) {
+          this.dom.floatingMusicWidget.classList.toggle("minimized");
+          const isMin = this.dom.floatingMusicWidget.classList.contains("minimized");
+          this.dom.btnToggleMinimizeWidget.textContent = isMin ? "🗖" : "🗕";
+          this.dom.btnToggleMinimizeWidget.title = isMin ? "Mở rộng player" : "Thu nhỏ player";
+        }
+      });
+    }
+
+    if (this.dom.btnCloseFloatingWidget) {
+      this.dom.btnCloseFloatingWidget.addEventListener("click", () => {
+        if (this.dom.floatingMusicWidget) {
+          this.dom.floatingMusicWidget.classList.add("hidden");
+        }
+      });
+    }
+
+    if (this.dom.btnSeekPlayToggle) {
+      this.dom.btnSeekPlayToggle.addEventListener("click", () => {
+        this.toggleBgm();
+      });
+    }
+
+    if (this.dom.btnSeekBackward) {
+      this.dom.btnSeekBackward.addEventListener("click", () => {
+        this.seekRelative(-10);
+      });
+    }
+
+    if (this.dom.btnSeekForward) {
+      this.dom.btnSeekForward.addEventListener("click", () => {
+        this.seekRelative(10);
+      });
+    }
+
+    if (this.dom.playerProgressBar) {
+      this.dom.playerProgressBar.addEventListener("input", (e) => {
+        this.isUserDraggingSeek = true;
+        const val = parseFloat(e.target.value);
+        if (this.dom.seekCurrentTime) {
+          this.dom.seekCurrentTime.textContent = this.formatTime(val);
+        }
+        if (this.dom.seekProgressFill && this.currentTrackDuration > 0) {
+          const pct = Math.min(100, Math.max(0, (val / this.currentTrackDuration) * 100));
+          this.dom.seekProgressFill.style.width = pct + "%";
+        }
+      });
+
+      this.dom.playerProgressBar.addEventListener("change", (e) => {
+        const val = parseFloat(e.target.value);
+        this.seekToSeconds(val);
+        setTimeout(() => {
+          this.isUserDraggingSeek = false;
+        }, 300);
+      });
+    }
+
+    if (this.dom.widgetVolSlider) {
+      this.dom.widgetVolSlider.addEventListener("input", (e) => {
+        const val = parseFloat(e.target.value);
+        this.setBgmVolume(val);
       });
     }
 
@@ -2933,6 +3020,7 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     if (savedVol !== null) {
       this.bgmVolume = parseFloat(savedVol);
       if (this.dom.volSlider) this.dom.volSlider.value = this.bgmVolume;
+      if (this.dom.widgetVolSlider) this.dom.widgetVolSlider.value = this.bgmVolume;
     }
 
     // 2. Phục hồi bài hát đã lưu
@@ -2959,6 +3047,164 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     window.onSpotifyIframeApiReady = (IFrameAPI) => {
       window.SpotifyIframeApi = IFrameAPI;
     };
+  }
+
+  formatTime(totalSeconds) {
+    if (isNaN(totalSeconds) || totalSeconds < 0) return "00:00";
+    const sec = Math.floor(totalSeconds);
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
+  updateFloatingWidgetUI(source, title) {
+    if (!this.dom.floatingMusicWidget) return;
+
+    // Hiển thị khung widget floating
+    this.dom.floatingMusicWidget.classList.remove("hidden");
+
+    // Dynamic border & glow theo nguồn phát
+    this.dom.floatingMusicWidget.classList.remove("source-youtube", "source-soundcloud", "source-spotify", "source-html5");
+    this.dom.floatingMusicWidget.classList.add(`source-${source}`);
+
+    // Brand badge
+    const brandMap = {
+      youtube: { icon: "🔴", name: "YOUTUBE" },
+      soundcloud: { icon: "🟠", name: "SOUNDCLOUD" },
+      spotify: { icon: "🟢", name: "SPOTIFY" },
+      html5: { icon: "🟣", name: "MP3 AUDIO" }
+    };
+    const brand = brandMap[source] || { icon: "🎵", name: "ONLINE MUSIC" };
+    if (this.dom.playerBrandIcon) this.dom.playerBrandIcon.textContent = brand.icon;
+    if (this.dom.playerBrandName) this.dom.playerBrandName.textContent = brand.name;
+    if (this.dom.floatingTrackTitle) this.dom.floatingTrackTitle.textContent = title || "Đang phát nhạc...";
+
+    // Ẩn / Hiện đúng slot media trong màn hình widget
+    const slots = {
+      youtube: this.dom.youtubePlayerContainer,
+      soundcloud: this.dom.soundcloudPlayerContainer,
+      spotify: this.dom.spotifyPlayerContainer,
+      html5: this.dom.audioVisualizerSlot
+    };
+
+    Object.entries(slots).forEach(([key, slotElem]) => {
+      if (slotElem) {
+        if (key === source) {
+          slotElem.classList.remove("hidden");
+        } else {
+          slotElem.classList.add("hidden");
+        }
+      }
+    });
+
+    if (source === "html5" && this.dom.audioVisualizerName) {
+      this.dom.audioVisualizerName.textContent = title || "MP3 Track";
+    }
+
+    // Ghi chú về Spotify Preview 30s
+    if (this.dom.spotifyEmbedNotice) {
+      if (source === "spotify") {
+        this.dom.spotifyEmbedNotice.classList.remove("hidden");
+      } else {
+        this.dom.spotifyEmbedNotice.classList.add("hidden");
+      }
+    }
+
+    // Nút play/pause
+    if (this.dom.btnSeekPlayToggle) {
+      this.dom.btnSeekPlayToggle.textContent = this.bgmPlaying ? "⏸" : "▶";
+    }
+  }
+
+  startProgressTracker() {
+    this.stopProgressTracker();
+    this.progressInterval = setInterval(() => {
+      if (!this.bgmPlaying || this.isBgmDucked) return;
+
+      if (this.currentMusicType === "youtube" && this.ytPlayer) {
+        try {
+          if (typeof this.ytPlayer.getCurrentTime === "function" && typeof this.ytPlayer.getDuration === "function") {
+            const cur = this.ytPlayer.getCurrentTime() || 0;
+            const dur = this.ytPlayer.getDuration() || 0;
+            this.updateProgressUI(cur, dur);
+          }
+        } catch (e) {}
+      } else if (this.currentMusicType === "soundcloud" && this.scWidget) {
+        try {
+          this.scWidget.getPosition((posMs) => {
+            this.scWidget.getDuration((durMs) => {
+              const cur = (posMs || 0) / 1000;
+              const dur = (durMs || 0) / 1000;
+              this.updateProgressUI(cur, dur);
+            });
+          });
+        } catch (e) {}
+      } else if (this.currentMusicType === "html5" && this.dom.customAudioElem) {
+        const cur = this.dom.customAudioElem.currentTime || 0;
+        const dur = this.dom.customAudioElem.duration || 0;
+        this.updateProgressUI(cur, dur);
+      }
+    }, 500);
+  }
+
+  stopProgressTracker() {
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = null;
+    }
+  }
+
+  updateProgressUI(curSec, durSec) {
+    this.currentTrackTime = curSec;
+    this.currentTrackDuration = durSec;
+
+    if (this.dom.seekCurrentTime && !this.isUserDraggingSeek) {
+      this.dom.seekCurrentTime.textContent = this.formatTime(curSec);
+    }
+    if (this.dom.seekTotalDuration && durSec > 0) {
+      this.dom.seekTotalDuration.textContent = this.formatTime(durSec);
+    }
+
+    if (this.dom.playerProgressBar && !this.isUserDraggingSeek) {
+      this.dom.playerProgressBar.max = durSec > 0 ? durSec : 100;
+      this.dom.playerProgressBar.value = curSec;
+    }
+
+    if (this.dom.seekProgressFill && !this.isUserDraggingSeek && durSec > 0) {
+      const pct = Math.min(100, Math.max(0, (curSec / durSec) * 100));
+      this.dom.seekProgressFill.style.width = pct + "%";
+    }
+  }
+
+  seekToSeconds(targetSec) {
+    const safeTarget = Math.max(0, targetSec);
+    this.currentTrackTime = safeTarget;
+
+    if (this.currentMusicType === "youtube" && this.ytPlayer) {
+      try {
+        if (typeof this.ytPlayer.seekTo === "function") {
+          this.ytPlayer.seekTo(safeTarget, true);
+        }
+      } catch (e) {}
+    } else if (this.currentMusicType === "soundcloud" && this.scWidget) {
+      try {
+        if (typeof this.scWidget.seekTo === "function") {
+          this.scWidget.seekTo(safeTarget * 1000);
+        }
+      } catch (e) {}
+    } else if (this.currentMusicType === "html5" && this.dom.customAudioElem) {
+      try {
+        this.dom.customAudioElem.currentTime = safeTarget;
+      } catch (e) {}
+    }
+
+    this.updateProgressUI(safeTarget, this.currentTrackDuration);
+  }
+
+  seekRelative(deltaSec) {
+    const maxDur = this.currentTrackDuration > 0 ? this.currentTrackDuration : 99999;
+    const newTarget = Math.max(0, Math.min(maxDur, (this.currentTrackTime || 0) + deltaSec));
+    this.seekToSeconds(newTarget);
   }
 
   extractYouTubeId(url) {
@@ -3009,6 +3255,7 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       this.pauseHtml5Audio();
       this.pauseYouTube();
       this.pauseSoundCloud();
+      this.currentTrackTitle = detectedTitle;
       this.playSpotify(spotifyInfo);
     } else if (ytId) {
       // --- XỬ LÝ YOUTUBE ---
@@ -3017,8 +3264,7 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       this.pauseHtml5Audio();
       this.pauseSoundCloud();
       this.pauseSpotify();
-      const spotifyWidget = document.getElementById("spotifyFloatingWidget");
-      if (spotifyWidget) spotifyWidget.classList.add("hidden");
+      this.currentTrackTitle = detectedTitle;
       this.playYouTube(ytId);
     } else if (isSc) {
       // --- XỬ LÝ SOUNDCLOUD ---
@@ -3027,8 +3273,7 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       this.pauseHtml5Audio();
       this.pauseYouTube();
       this.pauseSpotify();
-      const spotifyWidget = document.getElementById("spotifyFloatingWidget");
-      if (spotifyWidget) spotifyWidget.classList.add("hidden");
+      this.currentTrackTitle = detectedTitle;
       this.playSoundCloud(url);
     } else {
       // --- XỬ LÝ LINK MP3 / AUDIO STREAM ---
@@ -3040,14 +3285,13 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       this.pauseYouTube();
       this.pauseSoundCloud();
       this.pauseSpotify();
-      const spotifyWidget = document.getElementById("spotifyFloatingWidget");
-      if (spotifyWidget) spotifyWidget.classList.add("hidden");
+      this.currentTrackTitle = detectedTitle;
       this.playHtml5Audio(url);
     }
 
-    this.currentTrackTitle = detectedTitle;
     this.bgmPlaying = true;
     if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+    if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "⏸";
     if (this.dom.currentTrackName) this.dom.currentTrackName.textContent = detectedTitle;
     if (this.dom.onlineMusicStatusText) {
       this.dom.onlineMusicStatusText.innerHTML = `🟢 Đang phát: <strong>${detectedTitle}</strong>`;
@@ -3058,11 +3302,11 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
   }
 
   playSpotify(spotifyInfo) {
-    const widget = document.getElementById("spotifyFloatingWidget");
-    const body = document.getElementById("spotifyWidgetBody");
-    if (!widget || !body) return;
+    this.updateFloatingWidgetUI("spotify", this.currentTrackTitle);
 
-    widget.classList.remove("hidden");
+    const body = document.getElementById("spotifyWidgetBody");
+    if (!body) return;
+
     const embedUrl = `https://open.spotify.com/embed/${spotifyInfo.type}/${spotifyInfo.id}?utm_source=generator&theme=0`;
     body.innerHTML = `<iframe id="spotifyIframe" style="border-radius:10px" src="${embedUrl}" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
 
@@ -3084,6 +3328,8 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
   }
 
   playYouTube(videoId) {
+    this.updateFloatingWidgetUI("youtube", this.currentTrackTitle);
+
     if (!window.YT || !window.YT.Player) {
       this.pendingYtVideoId = videoId;
       return;
@@ -3092,6 +3338,8 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
   }
 
   createOrLoadYouTubePlayer(videoId) {
+    this.updateFloatingWidgetUI("youtube", this.currentTrackTitle);
+
     const container = document.getElementById("youtubePlayerContainer");
     if (!container) return;
 
@@ -3101,6 +3349,7 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
         this.ytPlayer.unMute();
         this.ytPlayer.setVolume(this.bgmVolume * 100);
         this.ytPlayer.playVideo();
+        this.startProgressTracker();
         return;
       } catch (err) {
         console.warn("YouTube player reload error:", err);
@@ -3110,8 +3359,8 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     container.innerHTML = '<div id="ytIframeSlot"></div>';
     try {
       this.ytPlayer = new YT.Player('ytIframeSlot', {
-        height: '200',
-        width: '200',
+        height: '190',
+        width: '100%',
         videoId: videoId,
         playerVars: {
           autoplay: 1,
@@ -3128,12 +3377,17 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
               event.target.unMute();
               event.target.setVolume(this.bgmVolume * 100);
               event.target.playVideo();
+              this.startProgressTracker();
             } catch (e) {}
           },
           onStateChange: (event) => {
             if (event.data === YT.PlayerState.PLAYING) {
               this.bgmPlaying = true;
               if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+              if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "⏸";
+              this.startProgressTracker();
+            } else if (event.data === YT.PlayerState.PAUSED) {
+              if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "▶";
             }
           },
           onError: (e) => {
@@ -3149,6 +3403,8 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
   }
 
   playSoundCloud(trackUrl) {
+    this.updateFloatingWidgetUI("soundcloud", this.currentTrackTitle);
+
     const container = document.getElementById("soundcloudPlayerContainer");
     if (!container) return;
 
@@ -3162,6 +3418,16 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
           this.scWidget.bind(window.SC.Widget.Events.READY, () => {
             this.scWidget.setVolume(this.bgmVolume * 100);
             this.scWidget.play();
+            this.startProgressTracker();
+          });
+          this.scWidget.bind(window.SC.Widget.Events.PLAY, () => {
+            this.bgmPlaying = true;
+            if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+            if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "⏸";
+            this.startProgressTracker();
+          });
+          this.scWidget.bind(window.SC.Widget.Events.PAUSE, () => {
+            if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "▶";
           });
         } catch (e) {
           console.warn("SoundCloud widget err:", e);
@@ -3171,13 +3437,31 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
   }
 
   playHtml5Audio(url) {
+    this.updateFloatingWidgetUI("html5", this.currentTrackTitle);
     if (!this.dom.customAudioElem) return;
     this.dom.customAudioElem.src = url;
     this.dom.customAudioElem.volume = this.bgmVolume;
     this.dom.customAudioElem.muted = false;
-    this.dom.customAudioElem.play().catch(e => {
+    this.dom.customAudioElem.play().then(() => {
+      this.bgmPlaying = true;
+      if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+      if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "⏸";
+      this.startProgressTracker();
+    }).catch(e => {
       console.warn("HTML5 audio playback err:", e);
     });
+
+    this.dom.customAudioElem.onplay = () => {
+      this.bgmPlaying = true;
+      if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+      if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "⏸";
+      this.startProgressTracker();
+    };
+    this.dom.customAudioElem.onpause = () => {
+      if (!this.isBgmDucked && this.dom.btnSeekPlayToggle) {
+        this.dom.btnSeekPlayToggle.textContent = "▶";
+      }
+    };
   }
 
   pauseYouTube() {
@@ -3307,12 +3591,12 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     this.pauseHtml5Audio();
     this.bgmPlaying = false;
     this.isBgmDucked = false;
+    this.stopProgressTracker();
     if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "▶ BẬT NHẠC";
+    if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "▶";
     if (this.dom.onlineMusicStatusText) {
       this.dom.onlineMusicStatusText.innerHTML = "⏹ Đã dừng phát nhạc.";
     }
-    const spotifyWidget = document.getElementById("spotifyFloatingWidget");
-    if (spotifyWidget) spotifyWidget.classList.add("hidden");
   }
 
   toggleBgm() {
@@ -3327,23 +3611,29 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
         this.resumeYouTube();
         this.bgmPlaying = true;
         if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+        if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "⏸";
+        this.startProgressTracker();
         return;
       } else if (this.currentMusicType === "soundcloud") {
         this.resumeSoundCloud();
         this.bgmPlaying = true;
         if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+        if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "⏸";
+        this.startProgressTracker();
         return;
       } else if (this.currentMusicType === "spotify") {
         this.resumeSpotify();
         this.bgmPlaying = true;
-        const spotifyWidget = document.getElementById("spotifyFloatingWidget");
-        if (spotifyWidget) spotifyWidget.classList.remove("hidden");
+        if (this.dom.floatingMusicWidget) this.dom.floatingMusicWidget.classList.remove("hidden");
         if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+        if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "⏸";
         return;
       } else if (this.currentMusicType === "html5") {
         this.resumeHtml5Audio();
         this.bgmPlaying = true;
         if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+        if (this.dom.btnSeekPlayToggle) this.dom.btnSeekPlayToggle.textContent = "⏸";
+        this.startProgressTracker();
         return;
       }
 
@@ -3360,6 +3650,12 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
   setBgmVolume(val) {
     this.bgmVolume = val;
     localStorage.setItem("antigravity_bgm_volume", val);
+    if (this.dom.volSlider) {
+      this.dom.volSlider.value = val;
+    }
+    if (this.dom.widgetVolSlider) {
+      this.dom.widgetVolSlider.value = val;
+    }
     if (this.dom.customAudioElem) {
       this.dom.customAudioElem.volume = val;
     }
