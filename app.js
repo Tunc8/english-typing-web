@@ -3101,16 +3101,22 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       this.dom.audioVisualizerName.textContent = title || "MP3 Track";
     }
 
-    // Ghi chú về Spotify Preview 30s
-    if (this.dom.spotifyEmbedNotice) {
+    // Spotify đã có đầy đủ giao diện player riêng (Phát/Dừng, Tua thời gian, Âm lượng)
+    // ➔ Ẩn bộ điều khiển custom (floatingPlayerControls) và thông báo preview khi phát Spotify
+    if (this.dom.floatingPlayerControls) {
       if (source === "spotify") {
-        this.dom.spotifyEmbedNotice.classList.remove("hidden");
+        this.dom.floatingPlayerControls.classList.add("hidden");
       } else {
-        this.dom.spotifyEmbedNotice.classList.add("hidden");
+        this.dom.floatingPlayerControls.classList.remove("hidden");
       }
     }
 
-    // Nút play/pause
+    // Luôn ẩn thông báo preview vì người dùng đã đăng nhập hoặc nghe trực tiếp
+    if (this.dom.spotifyEmbedNotice) {
+      this.dom.spotifyEmbedNotice.classList.add("hidden");
+    }
+
+    // Nút play/pause (chỉ áp dụng cho YouTube, SoundCloud, MP3)
     if (this.dom.btnSeekPlayToggle) {
       this.dom.btnSeekPlayToggle.textContent = this.bgmPlaying ? "⏸" : "▶";
     }
@@ -3118,6 +3124,9 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
 
   startProgressTracker() {
     this.stopProgressTracker();
+    // Spotify tự quản lý tiến độ bài hát bên trong iframe, không cần tracker
+    if (this.currentMusicType === "spotify") return;
+
     this.progressInterval = setInterval(() => {
       if (!this.bgmPlaying || this.isBgmDucked) return;
 

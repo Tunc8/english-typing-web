@@ -4185,6 +4185,10 @@ body {
   height: 152px !important;
 }
 
+.floating-music-widget.source-spotify .floating-player-screen {
+  min-height: 152px;
+}
+
 /* MP3 Audio Visualizer */
 #audioVisualizerSlot {
   display: flex;
