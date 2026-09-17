@@ -365,7 +365,7 @@ class UnifiedTypingGame {
 
     // 1. TẮT NHẠC NỀN TỨC THỜI (MUTE 0ms) TRONG LÚC PHÁT ÂM CÂU
     let wasMusicPlaying = false;
-    if (this.bgmPlaying) {
+    if (this.bgmPlaying || this.currentMusicType !== "none") {
       wasMusicPlaying = true;
       this.isBgmDucked = true;
       this.pauseBgmTemporary();
@@ -390,10 +390,10 @@ class UnifiedTypingGame {
       if (this.ttsUtteranceSeq !== currentSeq) return;
       if (this.speechSynth && this.speechSynth.speaking) return;
 
-      if (wasMusicPlaying && this.bgmPlaying && this.isBgmDucked) {
+      if (wasMusicPlaying && this.isBgmDucked) {
         this.isBgmDucked = false;
         setTimeout(() => {
-          if (this.ttsUtteranceSeq === currentSeq && this.bgmPlaying && !this.isBgmDucked) {
+          if (this.ttsUtteranceSeq === currentSeq && !this.isBgmDucked && (this.bgmPlaying || this.currentMusicType !== "none")) {
             this.resumeBgmTemporary();
           }
         }, 120);
@@ -428,22 +428,51 @@ class UnifiedTypingGame {
     }
   }
 
-  speakCurrentItem() {
+  speakCurrentSentence() {
     if (!this.currentChallenge) return;
+    const item = this.currentChallenge;
+    const target = (this.targetWord || item.targetWord || item.word || "").toLowerCase();
 
-    // 1. Nếu là chế độ từ vựng hoặc câu không có ngữ cảnh đoạn văn: chỉ phát âm từ tiếng Anh
-    if (this.currentMode === "vocab" || this.currentMode === "words" || !this.currentChallenge.contextSentence || !this.currentChallenge.contextSentence.includes("________")) {
-      this.speakText(this.targetWord, 0.85);
-      return;
+    let text = "";
+    if (this.currentMode === "vocab") {
+      text = item.contextSentence || item.example || item.meaning || target;
+    } else if (this.currentMode === "tenses") {
+      text = item.contextSentence || item.example || "";
+    } else if (this.currentMode === "collocation") {
+      text = item.contextSentence || item.example || item.chunk || "";
+    } else if (this.currentMode === "sentence_upgrade") {
+      text = item.contextSentence || item.advanced70 || item.basic40 || "";
+    } else if (this.currentMode === "dictation") {
+      text = item.audioText || item.contextSentence || target;
+    } else if (this.currentMode === "reading") {
+      text = item.questionPrompt || item.contextSentence || "";
+    } else {
+      text = item.contextSentence || item.example || target;
     }
 
-    // 2. Chế độ Ngữ pháp (chứa câu chuyện tiếng Anh hoàn chỉnh):
-    let sentence = this.currentChallenge.contextSentence || "";
-    sentence = sentence.replace(/\([^)]*\)\s*________/g, this.targetWord);
-    sentence = sentence.replace(/________/g, this.targetWord);
-    sentence = sentence.replace(/\([^)]*\)/g, " ");
+    if (!text) text = target;
 
-    this.speakText(sentence, 0.88);
+    // Điền từ đúng vào chỗ trống [ ________ ] hoặc ________ và loại bỏ gợi ý dạng (buy)
+    if (text && target) {
+      text = text.replace(/\([^)]*\)\s*_{2,}/g, target);
+      text = text.replace(/_{2,}/g, target);
+      text = text.replace(/\([^)]*\)/g, " ");
+    }
+
+    this.speakText(text, this.speechRate || 0.88);
+  }
+
+  speakCurrentWord() {
+    if (!this.currentChallenge) return;
+    const item = this.currentChallenge;
+    const word = (this.targetWord || item.targetWord || item.word || "").trim();
+    if (word) {
+      this.speakText(word, 0.85);
+    }
+  }
+
+  speakCurrentItem() {
+    this.speakCurrentSentence();
   }
 
   // --- DICTATION MODE (GÕ BỊT MẮT) ---
@@ -2700,13 +2729,24 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     if (this.dom.btnSpeed100) this.dom.btnSpeed100.addEventListener("click", () => setSpeed(1.0));
     if (this.dom.btnSpeed125) this.dom.btnSpeed125.addEventListener("click", () => setSpeed(1.25));
 
-    // Speaker Buttons
-    if (this.dom.btnSpeakColloc) this.dom.btnSpeakColloc.addEventListener("click", () => this.speakCurrentItem());
-    if (this.dom.btnSpeakUpgrade) this.dom.btnSpeakUpgrade.addEventListener("click", () => this.speakCurrentItem());
-    if (this.dom.btnSpeakDictation) this.dom.btnSpeakDictation.addEventListener("click", () => this.speakCurrentItem());
-    if (this.dom.btnSpeakGrammar) this.dom.btnSpeakGrammar.addEventListener("click", () => this.speakCurrentItem());
-    if (this.dom.btnSpeakWord) this.dom.btnSpeakWord.addEventListener("click", () => this.speakCurrentItem());
-    if (this.dom.btnSpeakModal) this.dom.btnSpeakModal.addEventListener("click", () => this.speakText(this.targetWord, 0.85));
+    // Speaker Buttons (Phát âm cả câu và phát âm riêng từ trên mọi thẻ bài)
+    document.querySelectorAll(".btn-speak-sentence, .btn-dict-replay-main, #btnSpeakVocab, #btnSpeakTenses, #btnSpeakColloc, #btnSpeakUpgrade, #btnSpeakDictation, #btnSpeakGrammar").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.speakCurrentSentence();
+      });
+    });
+
+    document.querySelectorAll(".btn-speak-word, .btn-dict-replay-word, #btnSpeakVocabWord, #btnSpeakTensesWord, #btnSpeakCollocWord, #btnSpeakUpgradeWord, #btnSpeakDictationWord, #btnSpeakGrammarWord, #btnSpeakWord").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.speakCurrentWord();
+      });
+    });
+
+    if (this.dom.btnSpeakModal) {
+      this.dom.btnSpeakModal.addEventListener("click", () => this.speakCurrentWord());
+    }
 
     // Mistake Vault Actions
     if (this.dom.btnCloseMistakeVault) {
@@ -3242,15 +3282,10 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
   }
 
   pauseBgmTemporary() {
-    if (this.currentMusicType === "youtube") {
-      this.pauseYouTube();
-    } else if (this.currentMusicType === "soundcloud") {
-      this.pauseSoundCloud();
-    } else if (this.currentMusicType === "spotify") {
-      this.pauseSpotify();
-    } else if (this.currentMusicType === "html5") {
-      this.pauseHtml5Audio();
-    }
+    this.pauseYouTube();
+    this.pauseSoundCloud();
+    this.pauseSpotify();
+    this.pauseHtml5Audio();
   }
 
   resumeBgmTemporary() {

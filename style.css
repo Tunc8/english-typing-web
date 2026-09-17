@@ -1540,6 +1540,30 @@ body {
   transform: scale(0.96);
 }
 
+.btn-speak-sentence {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.btn-speak-sentence:hover {
+  background: rgba(56, 189, 248, 0.3);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+  color: #bae6fd;
+}
+
+.btn-speak-word {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+.btn-speak-word:hover {
+  background: rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+  color: #e9d5ff;
+}
+
 .btn-tts-modal {
   background: rgba(16, 185, 129, 0.2);
   color: #10b981;

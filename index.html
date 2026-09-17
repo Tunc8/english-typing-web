@@ -286,9 +286,14 @@
               <span class="topic-tag" id="vocabTopicTag">Động Từ Bất Quy Tắc</span>
               <span class="ipa-tag" id="vocabIPA">/bɔːt/</span>
             </div>
-            <button class="btn-tts-speak" id="btnSpeakVocab" title="Nghe phát âm chuẩn người bản xứ (Phím TAB)">
-              🔊 PHÁT ÂM (TAB)
-            </button>
+            <div class="card-header-actions">
+              <button class="btn-tts-speak btn-speak-sentence" id="btnSpeakVocab" title="Nghe phát âm toàn bộ câu ngữ cảnh (Phím TAB)">
+                🔊 PHÁT ÂM CÂU (TAB)
+              </button>
+              <button class="btn-tts-speak btn-speak-word" id="btnSpeakVocabWord" title="Nghe phát âm riêng từ vựng">
+                🗣️ PHÁT ÂM TỪ
+              </button>
+            </div>
           </div>
 
           <div class="vocab-banner" id="vocabBanner">
@@ -318,8 +323,11 @@
               <button class="btn-card-guide" id="btnCardStudyTense" title="Xem cẩm nang công thức và dấu hiệu của thì này">
                 📘 CẨM NANG THÌ
               </button>
-              <button class="btn-tts-speak" id="btnSpeakTenses" title="Nghe phát âm toàn bộ câu tiếng Anh (Phím TAB)">
+              <button class="btn-tts-speak btn-speak-sentence" id="btnSpeakTenses" title="Nghe phát âm toàn bộ câu tiếng Anh (Phím TAB)">
                 🔊 PHÁT ÂM CÂU (TAB)
+              </button>
+              <button class="btn-tts-speak btn-speak-word" id="btnSpeakTensesWord" title="Nghe phát âm riêng động từ cần điền">
+                🗣️ PHÁT ÂM TỪ
               </button>
             </div>
           </div>
@@ -345,9 +353,14 @@
               <span class="topic-tag" id="collocTopicTag">Daily Life</span>
               <span class="ipa-tag" id="collocIPA">/meɪk ə dɪˈsɪʒn/</span>
             </div>
-            <button class="btn-tts-speak" id="btnSpeakColloc" title="Nghe phát âm chuẩn người bản xứ (Phím TAB)">
-              🔊 PHÁT ÂM (TAB)
-            </button>
+            <div class="card-header-actions">
+              <button class="btn-tts-speak btn-speak-sentence" id="btnSpeakColloc" title="Nghe phát âm toàn bộ câu hoàn chỉnh (Phím TAB)">
+                🔊 PHÁT ÂM CÂU (TAB)
+              </button>
+              <button class="btn-tts-speak btn-speak-word" id="btnSpeakCollocWord" title="Nghe phát âm riêng cụm/từ">
+                🗣️ PHÁT ÂM TỪ
+              </button>
+            </div>
           </div>
 
           <div class="colloc-banner" id="collocBanner">
@@ -371,9 +384,14 @@
               <span class="upgrade-badge">⚡ NÂNG CẤP CÂU 4.0 ➔ 7.0</span>
               <span class="pattern-badge" id="upgradePatternBadge">Inversion / Cleft / Participle</span>
             </div>
-            <button class="btn-tts-speak" id="btnSpeakUpgrade" title="Nghe câu nâng cấp 7.0 đọc chuẩn (Phím TAB)">
-              🔊 PHÁT ÂM CÂU 7.0 (TAB)
-            </button>
+            <div class="card-header-actions">
+              <button class="btn-tts-speak btn-speak-sentence" id="btnSpeakUpgrade" title="Nghe câu nâng cấp 7.0 đọc chuẩn (Phím TAB)">
+                🔊 PHÁT ÂM CÂU (TAB)
+              </button>
+              <button class="btn-tts-speak btn-speak-word" id="btnSpeakUpgradeWord" title="Nghe phát âm riêng từ cần điền">
+                🗣️ PHÁT ÂM TỪ
+              </button>
+            </div>
           </div>
 
           <!-- So Sánh 2 Tầng: Câu 4.0 vs Câu 7.0 -->
@@ -427,9 +445,14 @@
               <div class="wave-bar"></div>
               <div class="wave-bar"></div>
             </div>
-            <button class="btn-tts-speak btn-dict-replay-main" id="btnSpeakDictation" title="Nghe câu phát âm chuẩn (Phím TAB)">
-              🔊 NGHE CÂU (PHÍM TAB)
-            </button>
+            <div class="card-header-actions" style="margin-left: 0;">
+              <button class="btn-tts-speak btn-speak-sentence btn-dict-replay-main" id="btnSpeakDictation" title="Nghe câu phát âm chuẩn (Phím TAB)">
+                🔊 NGHE CÂU (PHÍM TAB)
+              </button>
+              <button class="btn-tts-speak btn-speak-word btn-dict-replay-word" id="btnSpeakDictationWord" title="Nghe phát âm riêng từ cần nghe">
+                🗣️ NGHE TỪ
+              </button>
+            </div>
           </div>
 
           <div class="dict-context-text" id="dictContextText">
@@ -454,8 +477,11 @@
               <button class="btn-card-guide" id="btnCardStudyTense" title="Xem vị trí dẫn chứng trong bài đọc">
                 📍 VỊ TRÍ DẪN CHỨNG
               </button>
-              <button class="btn-tts-speak" id="btnSpeakGrammar" title="Nghe đọc câu hỏi chuẩn Anh-Mỹ (Phím TAB)">
+              <button class="btn-tts-speak btn-speak-sentence" id="btnSpeakGrammar" title="Nghe đọc câu hỏi chuẩn Anh-Mỹ (Phím TAB)">
                 🔊 PHÁT ÂM CÂU (TAB)
+              </button>
+              <button class="btn-tts-speak btn-speak-word" id="btnSpeakGrammarWord" title="Nghe phát âm riêng đáp án">
+                🗣️ PHÁT ÂM TỪ
               </button>
             </div>
           </div>
