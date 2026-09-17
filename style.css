@@ -5253,9 +5253,17 @@ body {
 .lesson-modal-body {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
   padding: 10px 8px 18px 8px;
   display: flex;
   flex-direction: column;
+  transition: padding-bottom 0.2s ease-out;
+}
+
+.lesson-modal-body.mobile-keyboard-active {
+  padding-bottom: min(380px, 60vh) !important;
+  scroll-padding-bottom: min(300px, 50vh) !important;
 }
 
 .lesson-modal-body .main-arena {
@@ -5280,6 +5288,52 @@ body {
     box-shadow: 0 0 24px rgba(0, 242, 254, 0.9), inset 0 0 12px rgba(0, 242, 254, 0.45);
     transform: scale(1.04);
   }
+}
+
+/* Hiệu ứng ô nhập khi người dùng gõ / focus trên mobile */
+.word-slots-wrapper {
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.word-slots-wrapper.is-typing-focused {
+  border-color: #00f2fe !important;
+  background: rgba(14, 25, 45, 0.9) !important;
+  box-shadow: 0 0 24px rgba(0, 242, 254, 0.45), inset 0 2px 10px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Mobile Touch Hint Badge */
+.mobile-touch-hint {
+  display: none;
+}
+
+body.is-mobile-device .mobile-touch-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  position: absolute;
+  top: -12px;
+  right: 14px;
+  background: rgba(0, 242, 254, 0.15);
+  border: 1px solid rgba(0, 242, 254, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #00f2fe;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 15;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.25s ease;
+}
+
+body.is-mobile-device .word-slots-wrapper.is-typing-focused .mobile-touch-hint {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #4ade80;
 }
 
 /* Responsive adjustments */
@@ -5312,11 +5366,23 @@ body {
     max-width: 380px;
   }
   .lesson-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100%;
+    height: 100dvh;
     padding: 0;
+    align-items: stretch;
   }
   .lesson-modal-container {
-    height: 100vh;
-    max-height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
     border-radius: 0;
     border: none;
   }
@@ -5325,6 +5391,9 @@ body {
   }
   .lm-topic-title {
     font-size: 0.95rem;
+  }
+  .lesson-modal-body {
+    padding: 8px 6px 20px 6px;
   }
 }
 

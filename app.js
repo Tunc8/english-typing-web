@@ -272,6 +272,7 @@ class UnifiedTypingGame {
       // Typing Arena & Seamless Mobile Input
       wordSlotsWrapper: document.getElementById("wordSlotsWrapper"),
       wordSlotsContainer: document.getElementById("wordSlotsContainer"),
+      mobileTouchHint: document.getElementById("mobileTouchHint"),
       statusMessage: document.getElementById("statusMessage"),
       btnPeek: document.getElementById("btnPeek"),
       mobileNativeInput: document.getElementById("mobileNativeInput"),
@@ -1013,15 +1014,57 @@ class UnifiedTypingGame {
     }
   }
 
+  checkIsMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      || (navigator.maxTouchPoints > 0 && window.innerWidth <= 1024)
+      || (window.innerWidth <= 900 && ('ontouchstart' in window || navigator.maxTouchPoints > 0));
+  }
+
+  updateDeviceDetection() {
+    this.isMobileDevice = this.checkIsMobile();
+    if (this.isMobileDevice) {
+      document.body.classList.add("is-mobile-device");
+      document.body.classList.remove("is-desktop-device");
+      if (this.dom.statusMessage && (!this.typedLetters || this.typedLetters.length === 0)) {
+        this.dom.statusMessage.textContent = "Chạm vào ô chữ bên trên để mở bàn phím gõ!";
+      }
+    } else {
+      document.body.classList.add("is-desktop-device");
+      document.body.classList.remove("is-mobile-device");
+    }
+  }
+
+  highlightActiveSlot() {
+    const nextIdx = this.typedLetters ? this.typedLetters.length : 0;
+    if (this.dom.wordSlotsContainer && this.dom.wordSlotsContainer.children) {
+      const slots = this.dom.wordSlotsContainer.children;
+      for (let i = 0; i < slots.length; i++) {
+        slots[i].classList.toggle("active-typing", i === nextIdx);
+      }
+    }
+  }
+
   openLessonModal() {
     this.isLessonModalOpen = true;
     if (this.dom.lessonModal) {
       this.dom.lessonModal.classList.remove("hidden");
     }
     this.updateLessonModalHeader();
-    this.focusTypingInput();
-    setTimeout(() => {
+
+    // Trên Desktop: Tự động kích hoạt bàn phím gõ ngay lập tức (không cần chuột)
+    // Trên Mobile: TUYỆT ĐỐI KHÔNG tự động bật bàn phím ảo khi mới mở popup
+    // Chỉ bật bàn phím khi người dùng chủ động chạm vào ô nhập chữ
+    if (!this.checkIsMobile()) {
       this.focusTypingInput();
+      setTimeout(() => {
+        this.focusTypingInput();
+      }, 80);
+    } else {
+      this.highlightActiveSlot();
+      this.deactivateMobileKeyboard();
+    }
+
+    setTimeout(() => {
       this.speakCurrentItem();
     }, 200);
   }
@@ -1031,12 +1074,19 @@ class UnifiedTypingGame {
     if (this.dom.lessonModal) {
       this.dom.lessonModal.classList.add("hidden");
     }
+    this.deactivateMobileKeyboard();
     if (this.dom.btnStartLesson) {
       this.dom.btnStartLesson.focus();
     }
   }
 
   focusTypingInput() {
+    // Trên thiết bị di động: Không tự ý gọi .focus() bằng code nếu không do người dùng chạm
+    if (this.checkIsMobile()) {
+      this.highlightActiveSlot();
+      return;
+    }
+
     if (this.dom.mobileNativeInput) {
       this.dom.mobileNativeInput.value = "";
       this.dom.mobileNativeInput.focus({ preventScroll: true });
@@ -1045,13 +1095,64 @@ class UnifiedTypingGame {
       window.focus();
     } catch (e) {}
 
-    const nextIdx = this.typedLetters ? this.typedLetters.length : 0;
-    if (this.dom.wordSlotsContainer && this.dom.wordSlotsContainer.children) {
-      const slots = this.dom.wordSlotsContainer.children;
-      for (let i = 0; i < slots.length; i++) {
-        slots[i].classList.toggle("active-typing", i === nextIdx);
-      }
+    this.highlightActiveSlot();
+  }
+
+  activateMobileKeyboard() {
+    if (this.dom.mobileNativeInput) {
+      this.dom.mobileNativeInput.focus();
     }
+    if (this.dom.wordSlotsWrapper) {
+      this.dom.wordSlotsWrapper.classList.add("is-typing-focused");
+    }
+    if (this.dom.mobileTouchHint) {
+      this.dom.mobileTouchHint.textContent = "⌨️ Bàn phím đang mở";
+    }
+    if (this.dom.lessonModalBody) {
+      this.dom.lessonModalBody.classList.add("mobile-keyboard-active");
+    }
+    this.scrollActiveInputIntoView();
+  }
+
+  deactivateMobileKeyboard() {
+    if (this.dom.mobileNativeInput) {
+      this.dom.mobileNativeInput.blur();
+    }
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
+    if (this.dom.wordSlotsWrapper) {
+      this.dom.wordSlotsWrapper.classList.remove("is-typing-focused");
+    }
+    if (this.dom.mobileTouchHint) {
+      this.dom.mobileTouchHint.textContent = "👆 Chạm để mở bàn phím";
+    }
+    if (this.dom.lessonModalBody) {
+      this.dom.lessonModalBody.classList.remove("mobile-keyboard-active");
+    }
+  }
+
+  scrollActiveInputIntoView() {
+    if (!this.dom.lessonModalBody || !this.dom.wordSlotsWrapper) return;
+    
+    // Đảm bảo container có padding đáy lớn để cuộn vượt lên trên bàn phím ảo
+    this.dom.lessonModalBody.classList.add("mobile-keyboard-active");
+
+    const doScroll = () => {
+      if (!this.dom.wordSlotsWrapper) return;
+      // Cuộn để ô gõ chữ và ngữ cảnh câu hỏi nằm gọn trong tầm nhìn phía trên bàn phím
+      this.dom.wordSlotsWrapper.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest"
+      });
+    };
+
+    // Gọi liên tiếp để thích ứng mượt mà với thời gian trượt lên của bàn phím ảo iOS / Android
+    requestAnimationFrame(doScroll);
+    setTimeout(doScroll, 80);
+    setTimeout(doScroll, 240);
+    setTimeout(doScroll, 400);
   }
 
   loadPoolForModeAndBand() {
@@ -1385,11 +1486,17 @@ class UnifiedTypingGame {
     this.loadCurrentQuestion();
     this.updateLessonModalHeader();
 
-    // Tự động kích hoạt ngay lập tức ô gõ phím cho câu tiếp theo (không cần chạm chuột)
-    this.focusTypingInput();
-    setTimeout(() => {
+    // Trên Desktop: Tự động kích hoạt ngay lập tức ô gõ phím cho câu tiếp theo (không cần chạm chuột)
+    // Trên Mobile: Bàn phím đã tự tắt khi xong câu trước. Ở câu mới chỉ bật khi chạm vào ô nhập
+    if (!this.checkIsMobile()) {
       this.focusTypingInput();
-    }, 60);
+      setTimeout(() => {
+        this.focusTypingInput();
+      }, 60);
+    } else {
+      this.highlightActiveSlot();
+      this.deactivateMobileKeyboard();
+    }
   }
 
   updateProgressUI(current, total) {
@@ -1436,7 +1543,11 @@ class UnifiedTypingGame {
         this.dom.statusMessage.innerHTML = `🎧 <strong>Gõ Bịt Mắt:</strong> Lắng nghe giọng đọc và gõ tiếp <strong>${remaining}</strong> chữ cái! (Nhấn <strong>TAB</strong> để nghe lại)`;
       } else {
         if (nextIdx === 0) {
-          this.dom.statusMessage.innerHTML = `Từ cần điền có <strong>${this.targetWord.length}</strong> chữ cái. Hãy gõ chữ cái đầu tiên!`;
+          if (this.checkIsMobile()) {
+            this.dom.statusMessage.innerHTML = `👆 Chạm vào ô chữ bên trên để mở bàn phím gõ <strong>${this.targetWord.length}</strong> chữ cái!`;
+          } else {
+            this.dom.statusMessage.innerHTML = `Từ cần điền có <strong>${this.targetWord.length}</strong> chữ cái. Hãy gõ chữ cái đầu tiên!`;
+          }
         } else {
           this.dom.statusMessage.innerHTML = `Đã gõ đúng <strong>${nextIdx}/${this.targetWord.length}</strong> chữ. Còn <strong>${remaining}</strong> chữ cái nữa!`;
         }
@@ -1494,13 +1605,8 @@ class UnifiedTypingGame {
     this.isMemeActive = true;
     this.playFanfare();
 
-    // 1. Ẩn bàn phím ảo điện thoại ngay khi hoàn thành từ để xem meme thoáng màn hình
-    if (this.dom.mobileNativeInput) {
-      this.dom.mobileNativeInput.blur();
-    }
-    if (document.activeElement && typeof document.activeElement.blur === "function") {
-      document.activeElement.blur();
-    }
+    // 1. Tự động tắt bàn phím ảo điện thoại ngay khi đã hoàn thành từ để xem meme thoáng màn hình
+    this.deactivateMobileKeyboard();
 
     this.combo++;
     const points = 500 + this.combo * 200;
@@ -2989,36 +3095,64 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
           this.dom.mobileNativeInput.value = "";
         }
       });
+
+      this.dom.mobileNativeInput.addEventListener("focus", () => {
+        if (this.dom.wordSlotsWrapper) {
+          this.dom.wordSlotsWrapper.classList.add("is-typing-focused");
+        }
+        if (this.dom.mobileTouchHint) {
+          this.dom.mobileTouchHint.textContent = "⌨️ Bàn phím đang mở";
+        }
+        if (this.dom.lessonModalBody) {
+          this.dom.lessonModalBody.classList.add("mobile-keyboard-active");
+        }
+        if (this.checkIsMobile()) {
+          this.scrollActiveInputIntoView();
+        }
+      });
+
+      this.dom.mobileNativeInput.addEventListener("blur", () => {
+        // Nếu không phải đang trong bài học hoặc đã hoàn thành từ, reset trạng thái bàn phím
+        if (!this.isLessonModalOpen || this.typedLetters.length === this.targetWord.length) {
+          if (this.dom.wordSlotsWrapper) {
+            this.dom.wordSlotsWrapper.classList.remove("is-typing-focused");
+          }
+          if (this.dom.mobileTouchHint) {
+            this.dom.mobileTouchHint.textContent = "👆 Chạm để mở bàn phím";
+          }
+          if (this.dom.lessonModalBody) {
+            this.dom.lessonModalBody.classList.remove("mobile-keyboard-active");
+          }
+        }
+      });
     }
 
-    // 2. Chạm vào ô chữ cái để kích hoạt bàn phím ảo điện thoại tại chỗ, hoàn toàn không nẩy màn hình
-    const focusMobileTyping = () => {
-      if (this.dom.mobileNativeInput) {
-        this.dom.mobileNativeInput.focus({ preventScroll: true });
-      }
+    // 2. Chạm vào ô chữ cái để kích hoạt bàn phím ảo điện thoại tại chỗ và kéo nội dung lên
+    const handleSlotTrigger = (e) => {
+      this.activateMobileKeyboard();
     };
 
     if (this.dom.wordSlotsWrapper) {
-      this.dom.wordSlotsWrapper.addEventListener("click", focusMobileTyping);
-      this.dom.wordSlotsWrapper.addEventListener("touchstart", focusMobileTyping, { passive: true });
+      this.dom.wordSlotsWrapper.addEventListener("click", handleSlotTrigger);
+      this.dom.wordSlotsWrapper.addEventListener("touchend", handleSlotTrigger, { passive: true });
     }
     if (this.dom.wordSlotsContainer) {
-      this.dom.wordSlotsContainer.addEventListener("click", focusMobileTyping);
-      this.dom.wordSlotsContainer.addEventListener("touchstart", focusMobileTyping, { passive: true });
+      this.dom.wordSlotsContainer.addEventListener("click", handleSlotTrigger);
+      this.dom.wordSlotsContainer.addEventListener("touchend", handleSlotTrigger, { passive: true });
+    }
+
+    // Lắng nghe thay đổi kích thước khung nhìn ảo (visualViewport) khi bàn phím ảo bật/tắt trên mobile
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", () => {
+        if (this.isLessonModalOpen && document.activeElement === this.dom.mobileNativeInput) {
+          this.scrollActiveInputIntoView();
+        }
+      });
     }
 
     // Tự động nhận diện thiết bị di động hay máy tính
-    this.isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
-      || (navigator.maxTouchPoints > 0 && window.innerWidth <= 1024);
-
-    if (this.isMobileDevice) {
-      document.body.classList.add("is-mobile-device");
-      if (this.dom.statusMessage) {
-        this.dom.statusMessage.textContent = "Chạm vào ô chữ để gõ!";
-      }
-    } else {
-      document.body.classList.add("is-desktop-device");
-    }
+    this.updateDeviceDetection();
+    window.addEventListener("resize", () => this.updateDeviceDetection());
 
     // Phase Stepper Buttons
     if (this.dom.btnPhase1) this.dom.btnPhase1.addEventListener("click", () => this.switchPhase("phase_1"));
@@ -3203,10 +3337,12 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       });
     }
 
-    // Click vào vùng bài học thì tự động focus ô gõ phím
+    // Click vào vùng bài học trên Desktop thì hỗ trợ focus ô gõ phím, nhưng trên Mobile TUYỆT ĐỐI không tự bật bàn phím
     if (this.dom.lessonModalBody) {
-      this.dom.lessonModalBody.addEventListener("click", () => {
-        this.focusTypingInput();
+      this.dom.lessonModalBody.addEventListener("click", (e) => {
+        if (!this.checkIsMobile() && !e.target.closest("button, a, input, select, textarea")) {
+          this.focusTypingInput();
+        }
       });
     }
 
