@@ -247,18 +247,12 @@ class UnifiedTypingGame {
       aiStatusPanel: document.getElementById("aiStatusPanel"),
       aiStatusMsg: document.getElementById("aiStatusMsg"),
 
-      // Typing Arena & Mobile Inputs
+      // Typing Arena & Seamless Mobile Input
+      wordSlotsWrapper: document.getElementById("wordSlotsWrapper"),
       wordSlotsContainer: document.getElementById("wordSlotsContainer"),
       statusMessage: document.getElementById("statusMessage"),
       btnPeek: document.getElementById("btnPeek"),
       mobileNativeInput: document.getElementById("mobileNativeInput"),
-      mobileTypingToolbar: document.getElementById("mobileTypingToolbar"),
-      btnFocusMobileInput: document.getElementById("btnFocusMobileInput"),
-      btnToggleTouchKeyboard: document.getElementById("btnToggleTouchKeyboard"),
-      virtualTouchKeyboard: document.getElementById("virtualTouchKeyboard"),
-      vkTab: document.getElementById("vkTab"),
-      vkPeek: document.getElementById("vkPeek"),
-      vkKeys: document.querySelectorAll(".vk-key[data-key]"),
 
       // Meme Popup
       memeModal: document.getElementById("memeModal"),
@@ -2737,68 +2731,33 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       });
     }
 
-    // 2. Chạm vào ô chữ cái để kích hoạt bàn phím ảo điện thoại
+    // 2. Chạm vào ô chữ cái để kích hoạt bàn phím ảo điện thoại tại chỗ, hoàn toàn không nẩy màn hình
+    const focusMobileTyping = () => {
+      if (this.dom.mobileNativeInput) {
+        this.dom.mobileNativeInput.focus({ preventScroll: true });
+      }
+    };
+
+    if (this.dom.wordSlotsWrapper) {
+      this.dom.wordSlotsWrapper.addEventListener("click", focusMobileTyping);
+      this.dom.wordSlotsWrapper.addEventListener("touchstart", focusMobileTyping, { passive: true });
+    }
     if (this.dom.wordSlotsContainer) {
-      this.dom.wordSlotsContainer.addEventListener("click", () => {
-        if (this.dom.mobileNativeInput) {
-          this.dom.mobileNativeInput.focus();
-        }
-      });
+      this.dom.wordSlotsContainer.addEventListener("click", focusMobileTyping);
+      this.dom.wordSlotsContainer.addEventListener("touchstart", focusMobileTyping, { passive: true });
     }
 
-    // 3. Nút bật bàn phím máy
-    if (this.dom.btnFocusMobileInput) {
-      this.dom.btnFocusMobileInput.addEventListener("click", () => {
-        if (this.dom.mobileNativeInput) {
-          this.dom.mobileNativeInput.focus();
-        }
-      });
-    }
+    // Tự động nhận diện thiết bị di động hay máy tính
+    this.isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+      || (navigator.maxTouchPoints > 0 && window.innerWidth <= 1024);
 
-    // 4. Nút bật / tắt bàn phím cảm ứng trên màn hình (On-Screen Touch Keyboard)
-    if (this.dom.btnToggleTouchKeyboard) {
-      this.dom.btnToggleTouchKeyboard.addEventListener("click", () => {
-        if (this.dom.virtualTouchKeyboard) {
-          this.dom.virtualTouchKeyboard.classList.toggle("hidden");
-          const isShown = !this.dom.virtualTouchKeyboard.classList.contains("hidden");
-          this.dom.btnToggleTouchKeyboard.classList.toggle("active", isShown);
-        }
-      });
-    }
-
-    // 5. Các phím bấm cảm ứng A-Z trên On-Screen Keyboard
-    if (this.dom.vkKeys) {
-      this.dom.vkKeys.forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          const key = btn.dataset.key;
-          if (key) {
-            if (navigator.vibrate) {
-              try { navigator.vibrate(15); } catch(err) {}
-            }
-            this.handleLetterPress(key);
-          }
-        });
-      });
-    }
-
-    // 6. Phím TAB & PEEK trên On-Screen Keyboard
-    if (this.dom.vkTab) {
-      this.dom.vkTab.addEventListener("click", () => {
-        this.speakCurrentItem();
-      });
-    }
-    if (this.dom.vkPeek) {
-      this.dom.vkPeek.addEventListener("click", () => {
-        this.peekOneLetter();
-      });
-    }
-
-    // Tự động mở bàn phím cảm ứng trên màn hình nếu truy cập bằng thiết bị di động
-    const isMobileScreen = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
-    if (isMobileScreen && this.dom.virtualTouchKeyboard && this.dom.btnToggleTouchKeyboard) {
-      this.dom.virtualTouchKeyboard.classList.remove("hidden");
-      this.dom.btnToggleTouchKeyboard.classList.add("active");
+    if (this.isMobileDevice) {
+      document.body.classList.add("is-mobile-device");
+      if (this.dom.statusMessage) {
+        this.dom.statusMessage.textContent = "Chạm vào ô chữ để gõ!";
+      }
+    } else {
+      document.body.classList.add("is-desktop-device");
     }
 
     // Phase Stepper Buttons
