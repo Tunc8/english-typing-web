@@ -75,6 +75,8 @@ class UnifiedTypingGame {
     this.selectedVoice = null;
     this.initSpeechEngine();
 
+    this.isLessonModalOpen = false;
+
     // 8. Bootstrap App
     this.initMemeLibrary();
     this.initAudioEngine();
@@ -82,6 +84,7 @@ class UnifiedTypingGame {
     this.initTensesGuide();
     this.initEventListeners();
     this.switchPhase(this.currentPhase);
+    this.updateLobbyHero();
   }
 
   bindDOM() {
@@ -89,6 +92,25 @@ class UnifiedTypingGame {
       // Header & Score
       scoreDisplay: document.getElementById("scoreDisplay"),
       comboPill: document.getElementById("comboPill"),
+
+      // Sảnh Chào Tổng Quan (Lobby Hero Section)
+      lobbyHeroSection: document.getElementById("lobbyHeroSection"),
+      lobbyBadgePhase: document.getElementById("lobbyBadgePhase"),
+      lobbyTagMode: document.getElementById("lobbyTagMode"),
+      lobbyCounter: document.getElementById("lobbyCounter"),
+      lobbyTopicIcon: document.getElementById("lobbyTopicIcon"),
+      lobbyTopicTitle: document.getElementById("lobbyTopicTitle"),
+      lobbyTopicDesc: document.getElementById("lobbyTopicDesc"),
+      btnStartLesson: document.getElementById("btnStartLesson"),
+
+      // Popup Bài Học Thực Chiến (Lesson Modal)
+      lessonModal: document.getElementById("lessonModal"),
+      lessonModalBody: document.getElementById("lessonModalBody"),
+      lmPhaseBadge: document.getElementById("lmPhaseBadge"),
+      lmTopicTitle: document.getElementById("lmTopicTitle"),
+      lmProgressTag: document.getElementById("lmProgressTag"),
+      btnLmQuickSpeak: document.getElementById("btnLmQuickSpeak"),
+      btnCloseLesson: document.getElementById("btnCloseLesson"),
 
       // Phase Stepper Buttons (3 Giai Đoạn Học)
       btnPhase1: document.getElementById("btnPhase1"),
@@ -703,6 +725,7 @@ class UnifiedTypingGame {
     this.updateMilestoneHeader();
     this.loadPoolForModeAndBand();
     this.loadCurrentQuestion();
+    this.updateLobbyHero();
   }
 
   switchMode(newMode) {
@@ -772,6 +795,7 @@ class UnifiedTypingGame {
     this.updateMilestoneHeader();
     this.loadPoolForModeAndBand();
     this.loadCurrentQuestion();
+    this.updateLobbyHero();
   }
 
   switchBand(newBandKey) {
@@ -803,6 +827,7 @@ class UnifiedTypingGame {
     }
     this.loadPoolForModeAndBand();
     this.loadCurrentQuestion();
+    this.updateLobbyHero();
   }
 
   // Alias
@@ -871,6 +896,161 @@ class UnifiedTypingGame {
         "mistake_vault": "⭐ SỔ TAY LỖI SAI"
       };
       this.dom.roadmapBadgeLabel.textContent = modeNames[this.currentMode] || "🎯 LỘ TRÌNH 4.0 ➔ 7.0";
+    }
+  }
+
+  // --- LOBBY HERO & LESSON POPUP MODAL CONTROLLER ---
+  updateLobbyHero() {
+    if (!this.dom.lobbyHeroSection) return;
+
+    // 1. Phase Badge
+    const phaseNames = {
+      "phase_1": "🌱 GIAI ĐOẠN 1: NỀN TẢNG CĂN BẢN",
+      "phase_2": "🚀 GIAI ĐOẠN 2: CẤU TRÚC 4.0 ➔ 7.0",
+      "phase_3": "💎 GIAI ĐOẠN 3: THỰC CHIẾN CHUYÊN SÂU"
+    };
+    if (this.dom.lobbyBadgePhase) {
+      this.dom.lobbyBadgePhase.textContent = phaseNames[this.currentPhase] || "🎯 LỘ TRÌNH THỰC CHIẾN";
+    }
+
+    // 2. Mode Tag & Topic Details
+    let tag = "📖 BÀI HỌC CỐT LÕI";
+    let icon = "⚡";
+    let title = "Chủ Đề Thực Chiến";
+    let desc = "Nắm chắc kiến thức cốt lõi và luyện phản xạ gõ phím trực tiếp.";
+
+    if (this.currentMode === "vocab") {
+      tag = this.currentVocabCategory === "tech_ai" ? "💻 1.1. 100 TỪ VỰNG IT" : "📖 1.1. HỌC TỪ MỚI CỐT LÕI";
+      if (this.currentVocabCategory === "irregular_verbs") {
+        icon = "⚡";
+        title = "Động Từ Bất Quy Tắc (V2/V3)";
+        desc = "Học và phản xạ nhanh các động từ biến đổi đặc biệt quan trọng nhất, nắm vững quy tắc V1 ➔ V2 ➔ V3, không bao giờ nhầm lẫn đuôi -ed hay chính tả.";
+      } else if (this.currentVocabCategory === "daily_life") {
+        icon = "💬";
+        title = "Đời Sống & Giao Tiếp (Band 4.0 - 5.0)";
+        desc = "Từ vựng thông dụng tần suất cao trong đời sống, mua sắm, du lịch, thói quen và công việc hàng ngày, chuẩn hóa ngữ cảnh tự nhiên.";
+      } else if (this.currentVocabCategory === "emotions") {
+        icon = "💖";
+        title = "Cảm Xúc & Tính Từ Miêu Tả Cốt Lõi";
+        desc = "Hệ thống tính từ miêu tả trạng thái tinh thần, cảm xúc sâu sắc và tính cách giúp bài nói và viết biểu cảm, đa dạng và sinh động.";
+      } else if (this.currentVocabCategory === "tech_ai") {
+        icon = "💻";
+        const itTitles = {
+          "all": "100 Từ Vựng Chuyên Ngành IT & Kỹ Thuật (Toàn Bộ)",
+          "dev": "IT Nhóm 1: Lập Trình & Thuật Toán Cốt Lõi",
+          "cloud": "IT Nhóm 2: Hạ Tầng, Cloud & DevOps",
+          "data": "IT Nhóm 3: Database & Kiến Trúc Dữ Liệu",
+          "ai_sec": "IT Nhóm 4: Bảo Mật, Web & Trí Tuệ Nhân Tạo"
+        };
+        title = itTitles[this.currentItSubCategory] || "100 Từ Vựng IT & Công Nghệ AI";
+        desc = "Từ điển thuật ngữ IT thực chiến chuẩn kỹ sư phần mềm: Lập trình, Cloud, Database, AI và An ninh mạng chuẩn quốc tế.";
+      }
+    } else if (this.currentMode === "tenses") {
+      tag = "⚡ 1.2. BÀI TẬP 6 THÌ GÀI BẪY";
+      icon = "⚡";
+      const tenseTitles = {
+        "band_4_5": "6 Thì Cấp 1: Hiện Tại Đơn, Quá Khứ Đơn & Tương Lai",
+        "band_5_6": "6 Thì Cấp 2: Hiện Tại Hoàn Thành & Quá Khứ Tiếp Diễn",
+        "band_6_7": "6 Thì Cấp 3: Bẫy Mệnh Đề Thời Gian & Stative Verbs",
+        "band_custom": `6 Thì: Bộ Đề Riêng (${this.customDeckName})`
+      };
+      title = tenseTitles[this.currentBand] || "Bài Tập 6 Thì Gài Bẫy";
+      desc = "Bóc tách cạm bẫy thi cử về chia động từ, dấu hiệu nhận biết thần tốc và thần chú ghi nhớ quy tắc vàng.";
+    } else if (this.currentMode === "collocation") {
+      tag = "🎯 2.1. COLLOCATIONS CỐ ĐỊNH";
+      icon = "🎯";
+      title = `Collocations Cố Định • ${this.currentBand === "band_4_5" ? "Band 4.0 - 5.0" : (this.currentBand === "band_5_6" ? "Band 5.0 - 6.5" : "Band 6.5 - 7.0+")}`;
+      desc = "Luyện phản xạ các cụm từ kết hợp tự nhiên của người bản xứ (Make, Do, Have, Take...), xóa bỏ hoàn toàn lối dịch word-by-word.";
+    } else if (this.currentMode === "sentence_upgrade") {
+      tag = "⚡ 2.2. NÂNG CẤP CÂU 4.0 ➔ 7.0";
+      icon = "🚀";
+      title = `Nâng Cấp Câu Phức 4.0 ➔ 7.0 • ${this.currentBand === "band_4_5" ? "Căn Bản" : (this.currentBand === "band_5_6" ? "Học Thuật" : "Mastery")}`;
+      desc = "Biến đổi câu đơn 4.0 đơn điệu thành câu phức học thuật điểm cao: Đảo ngữ, Mệnh đề phân từ, Danh từ hóa và Câu chẻ Cleft sentence.";
+    } else if (this.currentMode === "dictation") {
+      tag = "🎧 3.1. NGHE CHÉP CHÍNH TẢ TỐC ĐỘ";
+      icon = "🎧";
+      title = "Nghe Chép Dictation Đa Tầng (0.75x - 1.25x)";
+      desc = "Luyện tai bắt trọn âm đuôi /s/, /z/, /ed/, bẫy nối âm và nuốt âm của người bản ngữ với 3 cấp độ tốc độ âm thanh.";
+    } else if (this.currentMode === "reading") {
+      tag = "📖 3.2. READING & SOI DẪN CHỨNG";
+      icon = "🔬";
+      const passage = window.READING_PASSAGES_DATA?.[this.currentPassageKey];
+      title = passage ? `${passage.code}: ${passage.title}` : "Reading & Giải Mã Paraphrase";
+      desc = passage ? passage.subtitle : "Bài đọc học thuật chuẩn format IELTS, soi trực diện vị trí dẫn chứng và bóc tách bảng bẫy Paraphrase.";
+    }
+
+    if (this.dom.lobbyTagMode) this.dom.lobbyTagMode.textContent = tag;
+    if (this.dom.lobbyTopicIcon) this.dom.lobbyTopicIcon.textContent = icon;
+    if (this.dom.lobbyTopicTitle) this.dom.lobbyTopicTitle.textContent = title;
+    if (this.dom.lobbyTopicDesc) this.dom.lobbyTopicDesc.textContent = desc;
+
+    const total = this.activePool ? this.activePool.length : 0;
+    if (this.dom.lobbyCounter) {
+      this.dom.lobbyCounter.textContent = `${total} BÀI HỌC SẴN SÀNG`;
+    }
+
+    this.updateLessonModalHeader();
+  }
+
+  updateLessonModalHeader() {
+    if (!this.dom.lessonModal) return;
+    const phaseNames = {
+      "phase_1": "GIAI ĐOẠN 1",
+      "phase_2": "GIAI ĐOẠN 2",
+      "phase_3": "GIAI ĐOẠN 3"
+    };
+    if (this.dom.lmPhaseBadge) {
+      this.dom.lmPhaseBadge.textContent = phaseNames[this.currentPhase] || "LỘ TRÌNH 4.0 ➔ 7.0";
+    }
+    if (this.dom.lmTopicTitle && this.dom.lobbyTopicTitle) {
+      const modePrefix = this.dom.lobbyTagMode ? this.dom.lobbyTagMode.textContent : "";
+      this.dom.lmTopicTitle.textContent = `${modePrefix} • ${this.dom.lobbyTopicTitle.textContent}`;
+    }
+    const current = this.activeIdx + 1;
+    const total = this.activePool ? this.activePool.length : 0;
+    if (this.dom.lmProgressTag) {
+      this.dom.lmProgressTag.textContent = `${current} / ${total} bài`;
+    }
+  }
+
+  openLessonModal() {
+    this.isLessonModalOpen = true;
+    if (this.dom.lessonModal) {
+      this.dom.lessonModal.classList.remove("hidden");
+    }
+    this.updateLessonModalHeader();
+    this.focusTypingInput();
+    setTimeout(() => {
+      this.focusTypingInput();
+      this.speakCurrentItem();
+    }, 200);
+  }
+
+  closeLessonModal() {
+    this.isLessonModalOpen = false;
+    if (this.dom.lessonModal) {
+      this.dom.lessonModal.classList.add("hidden");
+    }
+    if (this.dom.btnStartLesson) {
+      this.dom.btnStartLesson.focus();
+    }
+  }
+
+  focusTypingInput() {
+    if (this.dom.mobileNativeInput) {
+      this.dom.mobileNativeInput.value = "";
+      this.dom.mobileNativeInput.focus({ preventScroll: true });
+    }
+    try {
+      window.focus();
+    } catch (e) {}
+
+    const nextIdx = this.typedLetters ? this.typedLetters.length : 0;
+    if (this.dom.wordSlotsContainer && this.dom.wordSlotsContainer.children) {
+      const slots = this.dom.wordSlotsContainer.children;
+      for (let i = 0; i < slots.length; i++) {
+        slots[i].classList.toggle("active-typing", i === nextIdx);
+      }
     }
   }
 
@@ -1203,15 +1383,13 @@ class UnifiedTypingGame {
       this.dom.explanationModal.classList.add("hidden");
     }
     this.loadCurrentQuestion();
+    this.updateLessonModalHeader();
 
-    // Tự động kích hoạt lại bàn phím ảo cho câu tiếp theo trên mobile
-    if (this.isMobileDevice) {
-      setTimeout(() => {
-        if (this.dom.mobileNativeInput) {
-          this.dom.mobileNativeInput.focus({ preventScroll: true });
-        }
-      }, 250);
-    }
+    // Tự động kích hoạt ngay lập tức ô gõ phím cho câu tiếp theo (không cần chạm chuột)
+    this.focusTypingInput();
+    setTimeout(() => {
+      this.focusTypingInput();
+    }, 60);
   }
 
   updateProgressUI(current, total) {
@@ -1222,6 +1400,7 @@ class UnifiedTypingGame {
       const pct = total > 0 ? Math.round((current / total) * 100) : 0;
       this.dom.roadmapProgressBar.style.width = `${pct}%`;
     }
+    this.updateLessonModalHeader();
   }
 
   renderSlots() {
@@ -1483,6 +1662,11 @@ class UnifiedTypingGame {
       this.dom.btnSaveNotebook.textContent = "⭐ ĐÃ LƯU VÀO SỔ TAY";
     }
     this.dom.explanationModal.classList.remove("hidden");
+    setTimeout(() => {
+      if (this.dom.btnExplNext) {
+        this.dom.btnExplNext.focus();
+      }
+    }, 40);
   }
 
   // --- MISTAKE VAULT & SRS DAILY REVIEW ---
@@ -1627,6 +1811,7 @@ class UnifiedTypingGame {
     }
 
     this.loadCurrentQuestion();
+    this.openLessonModal();
   }
 
   clearMistakeVault() {
@@ -1878,6 +2063,7 @@ class UnifiedTypingGame {
 
     // Chuyển sang chơi ngay bộ đề vừa tạo
     this.switchBand("band_custom");
+    this.openLessonModal();
   }
 
   loadSampleDeck() {
@@ -2120,7 +2306,8 @@ OPPORTUNITY | Cơ hội tốt | 2 chữ P và đuôi -UNITY`;
 
       // Chuyển sang chơi ngay ở band_custom
       this.switchBand("band_custom");
-      this.switchMode("grammar");
+      this.switchMode("tenses");
+      this.openLessonModal();
 
     } catch (err) {
       alert("Có lỗi khi tạo câu hỏi: " + err.message);
@@ -2671,7 +2858,7 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
         return;
       }
 
-      // 4. Nếu Modal Custom Deck đang mở ➔ Không bắt phím gõ game
+      // 4. Nếu Modal Custom Deck đang mở ➔ Phím ESC đóng modal
       if (!this.dom.customDeckModal.classList.contains("hidden")) {
         if (e.key === "Escape") {
           this.dom.customDeckModal.classList.add("hidden");
@@ -2687,7 +2874,15 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
         return;
       }
 
-      // 4. Nếu Modal Mẹo Vàng đang mở ➔ Enter hoặc Space để sang câu tiếp
+      // 5.5. Nếu Sổ tay Lỗi sai (Mistake Vault) đang mở ➔ Phím ESC đóng
+      if (this.dom.mistakeVaultModal && !this.dom.mistakeVaultModal.classList.contains("hidden")) {
+        if (e.key === "Escape") {
+          this.dom.mistakeVaultModal.classList.add("hidden");
+        }
+        return;
+      }
+
+      // 6. Nếu Modal Mẹo Vàng đang mở ➔ Enter hoặc Space để sang câu tiếp
       if (!this.dom.explanationModal.classList.contains("hidden")) {
         if (e.key === "Enter" || e.code === "Space") {
           e.preventDefault();
@@ -2696,7 +2891,7 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
         return;
       }
 
-      // 5. Nếu Meme đang hiển thị ➔ Enter/Space/Escape để tắt ngay
+      // 7. Nếu Meme đang hiển thị ➔ Enter/Space/Escape để tắt ngay
       if (this.isMemeActive) {
         if (e.key === "Enter" || e.code === "Space" || e.key === "Escape") {
           e.preventDefault();
@@ -2705,15 +2900,38 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
         return;
       }
 
-      // 6. Gõ phím A-Z (Tự động chuyển dấu tiếng Việt Telex/VNI về chữ cái tiếng Anh)
-      const key = this.removeVietnameseTones(e.key).toUpperCase();
-      if (/^[A-Z]$/.test(key)) {
-        this.handleLetterPress(key);
+      // 8. Nếu đang ở màn hình Sảnh (Lobby) ➔ Phím Enter để BẮT ĐẦU BÀI HỌC
+      if (!this.isLessonModalOpen) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          this.openLessonModal();
+        }
+        return;
+      }
+
+      // 9. Nếu đang trong Popup Bài Học (Lesson Modal)
+      if (this.isLessonModalOpen) {
+        // Phím ESC: Thoát bài học về Sảnh
+        if (e.key === "Escape") {
+          e.preventDefault();
+          this.closeLessonModal();
+          return;
+        }
+
+        // Nếu sự kiện xuất phát từ mobileNativeInput, đã được xử lý bởi listener riêng
+        if (e.target === this.dom.mobileNativeInput) {
+          return;
+        }
+
+        // Phím A-Z: Gõ từ vựng
+        const key = this.removeVietnameseTones(e.key).toUpperCase();
+        if (/^[A-Z]$/.test(key)) {
+          this.handleLetterPress(key);
+        }
       }
     });
 
     // --- MOBILE TYPING & ON-SCREEN VIRTUAL KEYBOARD LISTENERS ---
-    // 1. Nhận ký tự gõ từ bàn phím ảo điện thoại (iOS / Android)
     if (this.dom.mobileNativeInput) {
       this.dom.mobileNativeInput.addEventListener("input", (e) => {
         let raw = e.target.value || "";
@@ -2730,26 +2948,45 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       });
 
       this.dom.mobileNativeInput.addEventListener("keydown", (e) => {
+        // Ngăn chặn nổi bọt lên window để không bị kích hoạt 2 lần
+        e.stopPropagation();
+
         if (e.key === "Enter" || e.code === "Space") {
+          e.preventDefault();
           if (this.isMemeActive) {
-            e.preventDefault();
             this.dismissMeme();
             return;
           }
           if (!this.dom.explanationModal.classList.contains("hidden")) {
-            e.preventDefault();
             this.advanceNextQuestion();
             return;
           }
+          if (!this.isLessonModalOpen) {
+            this.openLessonModal();
+            return;
+          }
+          return;
         }
+
+        if (e.key === "Escape") {
+          e.preventDefault();
+          if (this.isLessonModalOpen) {
+            this.closeLessonModal();
+            return;
+          }
+        }
+
         if (e.key === "Tab") {
           e.preventDefault();
           this.speakCurrentItem();
           return;
         }
+
         const key = this.removeVietnameseTones(e.key).toUpperCase();
         if (/^[A-Z]$/.test(key)) {
+          e.preventDefault();
           this.handleLetterPress(key);
+          this.dom.mobileNativeInput.value = "";
         }
       });
     }
@@ -2827,6 +3064,7 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
           this.updateMilestoneHeader();
           this.loadPoolForModeAndBand();
           this.loadCurrentQuestion();
+          this.updateLobbyHero();
         });
       });
     }
@@ -2940,6 +3178,37 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     this.dom.btnExplNext.addEventListener("click", () => {
       this.advanceNextQuestion();
     });
+
+    // Nút Bắt Đầu Bài Học tại Sảnh (Lobby)
+    if (this.dom.btnStartLesson) {
+      this.dom.btnStartLesson.addEventListener("click", () => this.openLessonModal());
+    }
+
+    // Nút Đóng Bài Học (Thoát ra sảnh)
+    if (this.dom.btnCloseLesson) {
+      this.dom.btnCloseLesson.addEventListener("click", () => this.closeLessonModal());
+    }
+
+    // Nút Nghe Nhanh trên Header Bài Học
+    if (this.dom.btnLmQuickSpeak) {
+      this.dom.btnLmQuickSpeak.addEventListener("click", () => this.speakCurrentSentence());
+    }
+
+    // Click backdrop của Lesson Modal để đóng (nếu click ngoài container)
+    if (this.dom.lessonModal) {
+      this.dom.lessonModal.addEventListener("click", (e) => {
+        if (e.target === this.dom.lessonModal) {
+          this.closeLessonModal();
+        }
+      });
+    }
+
+    // Click vào vùng bài học thì tự động focus ô gõ phím
+    if (this.dom.lessonModalBody) {
+      this.dom.lessonModalBody.addEventListener("click", () => {
+        this.focusTypingInput();
+      });
+    }
 
     // Save Notebook Button trong Modal
     if (this.dom.btnSaveNotebook) {

@@ -4839,10 +4839,495 @@ body {
     font-size: 1.15rem;
   }
 
-  .slot-sub {
-    display: none;
+}
+
+/* ==========================================================================
+   LOBBY HERO SECTION & LESSON POPUP MODAL (AUDITION / CYBERPUNK PREMIUM)
+   ========================================================================== */
+
+/* 1. Sảnh Chào Tổng Quan Chọn Nền Tảng & Chủ Đề */
+.lobby-hero-section {
+  position: relative;
+  max-width: 1080px;
+  margin: 14px auto 26px auto;
+  padding: 36px 36px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(16, 24, 48, 0.85) 0%, rgba(10, 15, 30, 0.95) 100%);
+  border: 1px solid rgba(0, 242, 254, 0.25);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(0, 242, 254, 0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  transition: all 0.3s ease;
+  z-index: 15;
+}
+
+.lobby-hero-section:hover {
+  border-color: rgba(0, 242, 254, 0.45);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 45px rgba(0, 242, 254, 0.22);
+}
+
+.lobby-hero-glow {
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.18) 0%, rgba(127, 0, 255, 0.1) 60%, transparent 80%);
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+/* Badge Row */
+.lobby-top-badge-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.lobby-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 242, 254, 0.12);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  color: #00f2fe;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+}
+
+.lobby-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(127, 0, 255, 0.15);
+  border: 1px solid rgba(127, 0, 255, 0.35);
+  color: #d8b4fe;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.lobby-counter {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Topic Info */
+.lobby-hero-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.lobby-topic-icon {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.2) 0%, rgba(127, 0, 255, 0.25) 100%);
+  border: 2px solid rgba(0, 242, 254, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  box-shadow: 0 0 25px rgba(0, 242, 254, 0.25);
+  animation: lobbyIconPulse 3s infinite ease-in-out;
+}
+
+@keyframes lobbyIconPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(0, 242, 254, 0.25); }
+  50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(0, 242, 254, 0.45); }
+}
+
+.lobby-topic-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lobby-topic-title {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, #ffffff 0%, #a5f3fc 60%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.lobby-topic-desc {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #cbd5e1;
+  max-width: 820px;
+}
+
+/* Highlights Grid */
+.lobby-highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.lobby-highlight-card {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: all 0.2s ease;
+}
+
+.lobby-highlight-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(0, 242, 254, 0.3);
+  transform: translateY(-2px);
+}
+
+.lh-icon {
+  font-size: 1.5rem;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(0, 242, 254, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lh-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lh-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.lh-desc {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
+/* Action Center with Giant Start Button */
+.lobby-action-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 10px;
+}
+
+.btn-start-lesson-hero {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 18px 56px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #00f2fe 0%, #38bdf8 40%, #818cf8 75%, #c084fc 100%);
+  color: #030712;
+  font-family: 'Orbitron', 'Outfit', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 35px rgba(0, 242, 254, 0.5), 0 0 65px rgba(129, 140, 248, 0.35);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: heroPulseGlow 2.4s infinite ease-in-out;
+}
+
+@keyframes heroPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(0, 242, 254, 0.45), 0 0 60px rgba(129, 140, 248, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(0, 242, 254, 0.75), 0 0 90px rgba(192, 132, 252, 0.5);
+    transform: scale(1.02);
   }
 }
+
+.btn-start-lesson-hero:hover {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 0 60px rgba(0, 242, 254, 0.8), 0 0 100px rgba(192, 132, 252, 0.6);
+}
+
+.btn-start-lesson-hero:active {
+  transform: scale(0.98);
+}
+
+.btn-start-icon {
+  font-size: 1.6rem;
+}
+
+.btn-start-key-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(3, 7, 18, 0.8);
+  color: #00f2fe;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.lobby-start-hint {
+  font-size: 0.86rem;
+  color: #94a3b8;
+  letter-spacing: 0.3px;
+  text-align: center;
+}
+
+.lobby-start-hint strong {
+  color: #38bdf8;
+}
+
+/* 2. LESSON POPUP MODAL (POPUP BÀI HỌC) */
+.lesson-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(3, 7, 18, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 85;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px 24px;
+  opacity: 1;
+  transition: opacity 0.25s ease-out;
+}
+
+.lesson-modal-overlay.hidden {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lesson-modal-container {
+  width: 100%;
+  max-width: 1400px;
+  height: 94vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(13, 21, 38, 0.98) 0%, rgba(8, 12, 24, 0.99) 100%);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 242, 254, 0.2);
+  overflow: hidden;
+  animation: lessonModalZoomIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes lessonModalZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.lesson-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  gap: 16px;
+}
+
+.lm-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lm-phase-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(0, 242, 254, 0.15);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  color: #00f2fe;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lm-topic-title {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.lm-progress-tag {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #38bdf8;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.lm-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lm-quick-speak {
+  font-size: 0.8rem;
+  padding: 7px 14px;
+  border-radius: 8px;
+}
+
+.btn-close-lesson {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  font-family: 'Orbitron', 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-close-lesson:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.lesson-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 8px 18px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lesson-modal-body .main-arena {
+  padding: 6px 12px 14px 12px;
+  width: 100%;
+}
+
+/* Auto-Typing Active Slot Glowing Pulse */
+.slot.active-typing {
+  border-color: #00f2fe !important;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.75), inset 0 0 8px rgba(0, 242, 254, 0.3) !important;
+  animation: slotActiveGlow 1.2s infinite ease-in-out;
+}
+
+@keyframes slotActiveGlow {
+  0%, 100% {
+    border-color: #00f2fe;
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.6), inset 0 0 6px rgba(0, 242, 254, 0.25);
+  }
+  50% {
+    border-color: #38bdf8;
+    box-shadow: 0 0 24px rgba(0, 242, 254, 0.9), inset 0 0 12px rgba(0, 242, 254, 0.45);
+    transform: scale(1.04);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .lobby-hero-section {
+    padding: 24px 18px;
+    margin: 10px 8px;
+  }
+  .lobby-hero-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  .lobby-topic-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 2rem;
+  }
+  .lobby-topic-title {
+    font-size: 1.45rem;
+  }
+  .lobby-highlights-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .btn-start-lesson-hero {
+    padding: 14px 32px;
+    font-size: 1.05rem;
+    width: 100%;
+    max-width: 380px;
+  }
+  .lesson-modal-overlay {
+    padding: 0;
+  }
+  .lesson-modal-container {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+  .lesson-modal-header {
+    padding: 10px 14px;
+  }
+  .lm-topic-title {
+    font-size: 0.95rem;
+  }
+}
+
 
 
 

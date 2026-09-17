@@ -247,8 +247,85 @@
       </div>
     </section>
 
-    <!-- Main Center: Centered Workspace for Vocab/Tenses/Colloc, 2-Column Split for Reading -->
-    <main class="main-arena single-column" id="mainArena">
+    <!-- LOBBY HERO SECTION: SẢNH CHỌN NỀN TẢNG CĂN BẢN & CHỦ ĐỀ -->
+    <section class="lobby-hero-section glass-panel" id="lobbyHeroSection">
+      <div class="lobby-hero-glow"></div>
+      
+      <div class="lobby-top-badge-row">
+        <span class="lobby-badge" id="lobbyBadgePhase">🌱 GIAI ĐOẠN 1: NỀN TẢNG CĂN BẢN</span>
+        <span class="lobby-tag" id="lobbyTagMode">📖 1.1. HỌC TỪ MỚI CỐT LÕI</span>
+        <span class="lobby-counter" id="lobbyCounter">12 BÀI HỌC SẴN SÀNG</span>
+      </div>
+
+      <div class="lobby-hero-content">
+        <div class="lobby-topic-icon" id="lobbyTopicIcon">⚡</div>
+        <div class="lobby-topic-info">
+          <h1 class="lobby-topic-title" id="lobbyTopicTitle">Động Từ Bất Quy Tắc (V2/V3)</h1>
+          <p class="lobby-topic-desc" id="lobbyTopicDesc">
+            Học và phản xạ nhanh các động từ biến đổi đặc biệt quan trọng nhất, nắm vững quy tắc V1 ➔ V2 ➔ V3, không bao giờ nhầm lẫn đuôi -ed hay chính tả.
+          </p>
+        </div>
+      </div>
+
+      <div class="lobby-highlights-grid">
+        <div class="lobby-highlight-card">
+          <span class="lh-icon">⌨️</span>
+          <div class="lh-texts">
+            <div class="lh-title">Gõ Phản Xạ Trực Tiếp</div>
+            <div class="lh-desc">Gõ từng ký tự trực tiếp trên bàn phím để kích hoạt phản xạ cơ ngón tay và nhớ sâu</div>
+          </div>
+        </div>
+        <div class="lobby-highlight-card">
+          <span class="lh-icon">🎧</span>
+          <div class="lh-texts">
+            <div class="lh-title">Phát Âm Bản Xứ Chuẩn</div>
+            <div class="lh-desc">Tích hợp giọng đọc bản xứ US/UK, bắt lỗi âm đuôi và hiện tượng nối âm thực chiến</div>
+          </div>
+        </div>
+        <div class="lobby-highlight-card">
+          <span class="lh-icon">💡</span>
+          <div class="lh-texts">
+            <div class="lh-title">Mẹo Vàng & Bóc Tách Bẫy</div>
+            <div class="lh-desc">Giải mã cạm bẫy thi cử hay mắc phải và bí kíp vàng ghi nhớ ngay sau mỗi câu</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NÚT BẮT ĐẦU HOÀNH TRÁNG -->
+      <div class="lobby-action-center">
+        <button class="btn-start-lesson-hero" id="btnStartLesson" title="Nhấn Enter hoặc click để mở bài học ngay">
+          <span class="btn-start-icon">🚀</span>
+          <span class="btn-start-text">BẮT ĐẦU BÀI HỌC</span>
+          <span class="btn-start-key-badge">[ ENTER ]</span>
+        </button>
+        <div class="lobby-start-hint">
+          Bấm nút hoặc nhấn phím <strong>[ENTER]</strong> để mở bài học • Tự động kích hoạt bàn phím gõ ngay
+        </div>
+      </div>
+    </section>
+
+    <!-- LESSON POPUP MODAL: POPUP BÀI HỌC THỰC CHIẾN -->
+    <div class="lesson-modal-overlay hidden" id="lessonModal">
+      <div class="lesson-modal-container glass-panel">
+        <div class="lesson-modal-header">
+          <div class="lm-header-left">
+            <span class="lm-phase-badge" id="lmPhaseBadge">GIAI ĐOẠN 1</span>
+            <span class="lm-topic-title" id="lmTopicTitle">📖 1.1. HỌC TỪ MỚI CỐT LÕI • ĐỘNG TỪ BẤT QUY TẮC</span>
+            <span class="lm-progress-tag" id="lmProgressTag">1 / 12 từ</span>
+          </div>
+          <div class="lm-header-right">
+            <button class="btn-tts-speak lm-quick-speak" id="btnLmQuickSpeak" title="Nghe phát âm toàn câu (Phím TAB)">
+              🔊 NGHE CÂU (TAB)
+            </button>
+            <button class="btn-close-lesson" id="btnCloseLesson" title="Đóng bài học, quay lại sảnh chọn chủ đề (Phím ESC)">
+              ✕ THOÁT RA SẢNH (ESC)
+            </button>
+          </div>
+        </div>
+        
+        <div class="lesson-modal-body" id="lessonModalBody">
+          <!-- Main Center: Centered Workspace for Vocab/Tenses/Colloc, 2-Column Split for Reading -->
+          <main class="main-arena single-column" id="mainArena">
       <!-- CỘT TRÁI: KHUNG BÀI ĐỌC HỌC THUẬT (PASSAGE VIEWER PANE) -->
       <div class="arena-left-pane">
         <section class="passage-viewer-pane glass-panel" id="passageViewerPane">
@@ -539,6 +616,9 @@
         </div>
       </div>
     </main>
+        </div>
+      </div>
+    </div>
 
     <!-- MEME POPUP REACTION (NHỎ GỌN, KHÔNG CHỮ CẢM THÁN, TỰ TẮT NHANH) -->
     <div class="meme-modal-overlay hidden" id="memeModal">
