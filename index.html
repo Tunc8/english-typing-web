@@ -123,8 +123,8 @@
     <section class="roadmap-bar glass-panel">
       <div class="roadmap-header-row">
         <div class="roadmap-title-area">
-          <span class="roadmap-badge" id="roadmapBadgeLabel">📖 1.1. HỌC TỪ MỚI CỐT LÕI</span>
-          <span class="roadmap-hint" id="currentMilestoneDesc">Giai đoạn 1: Nền tảng từ vựng thiết yếu & Động từ bất quy tắc</span>
+          <span class="roadmap-badge" id="roadmapBadgeLabel">💻 1.1. 100 TỪ VỰNG IT THỰC CHIẾN</span>
+          <span class="roadmap-hint" id="currentMilestoneDesc">Giai đoạn 1: 100 Từ Vựng Chuyên Ngành IT & Kỹ Thuật (Toàn Bộ 100 Từ)</span>
         </div>
         <div class="roadmap-actions">
           <!-- Nút Học Lý Thuyết 6 Thì & Ngữ Pháp Hỗ Trợ -->
@@ -162,10 +162,18 @@
       <div class="milestone-tabs reading-tabs" id="milestoneTabsBar">
         <!-- 1. BỘ LỌC CHỦ ĐỀ CHO HỌC TỪ MỚI (PHASE 1.1) -->
         <div class="filter-tab-group" id="vocabFilterGroup">
-          <button class="milestone-btn active" id="btnVocabIrr" data-cat="irregular_verbs">
+          <button class="milestone-btn active" id="btnVocabTech" data-cat="tech_ai">
+            <span class="ms-icon">💻</span>
+            <div class="ms-text">
+              <span class="ms-band-tag">CHỦ ĐỀ 1 • 100 TỪ IT</span>
+              <span class="ms-title">100 Từ Vựng Chuyên Ngành IT</span>
+            </div>
+          </button>
+
+          <button class="milestone-btn" id="btnVocabIrr" data-cat="irregular_verbs">
             <span class="ms-icon">⚡</span>
             <div class="ms-text">
-              <span class="ms-band-tag">CHỦ ĐỀ 1</span>
+              <span class="ms-band-tag">CHỦ ĐỀ 2</span>
               <span class="ms-title">Động Từ Bất Quy Tắc (V2/V3)</span>
             </div>
           </button>
@@ -173,7 +181,7 @@
           <button class="milestone-btn" id="btnVocabDaily" data-cat="daily_life">
             <span class="ms-icon">💬</span>
             <div class="ms-text">
-              <span class="ms-band-tag">CHỦ ĐỀ 2</span>
+              <span class="ms-band-tag">CHỦ ĐỀ 3</span>
               <span class="ms-title">Đời Sống & Giao Tiếp (4.0 - 5.0)</span>
             </div>
           </button>
@@ -181,22 +189,14 @@
           <button class="milestone-btn" id="btnVocabEmotions" data-cat="emotions">
             <span class="ms-icon">💖</span>
             <div class="ms-text">
-              <span class="ms-band-tag">CHỦ ĐỀ 3</span>
+              <span class="ms-band-tag">CHỦ ĐỀ 4</span>
               <span class="ms-title">Cảm Xúc & Tính Từ Cốt Lõi</span>
-            </div>
-          </button>
-
-          <button class="milestone-btn" id="btnVocabTech" data-cat="tech_ai">
-            <span class="ms-icon">💻</span>
-            <div class="ms-text">
-              <span class="ms-band-tag">CHỦ ĐỀ 4 • 100 TỪ IT</span>
-              <span class="ms-title">100 Từ Vựng Chuyên Ngành IT</span>
             </div>
           </button>
         </div>
 
         <!-- BỘ LỌC PHÂN HỆ CHO 100 TỪ VỰNG IT -->
-        <div class="it-subfilter-bar hidden" id="itSubFilterBar">
+        <div class="it-subfilter-bar" id="itSubFilterBar">
           <span class="it-subfilter-label">PHÂN HỆ IT:</span>
           <button class="it-chip active" data-it-cat="all">Tất Cả (100)</button>
           <button class="it-chip" data-it-cat="dev">💻 Lập Trình & Thuật Toán (25)</button>
@@ -253,16 +253,16 @@
       
       <div class="lobby-top-badge-row">
         <span class="lobby-badge" id="lobbyBadgePhase">🌱 GIAI ĐOẠN 1: NỀN TẢNG CĂN BẢN</span>
-        <span class="lobby-tag" id="lobbyTagMode">📖 1.1. HỌC TỪ MỚI CỐT LÕI</span>
-        <span class="lobby-counter" id="lobbyCounter">12 BÀI HỌC SẴN SÀNG</span>
+        <span class="lobby-tag" id="lobbyTagMode">💻 1.1. 100 TỪ VỰNG IT</span>
+        <span class="lobby-counter" id="lobbyCounter">100 BÀI HỌC SẴN SÀNG</span>
       </div>
 
       <div class="lobby-hero-content">
-        <div class="lobby-topic-icon" id="lobbyTopicIcon">⚡</div>
+        <div class="lobby-topic-icon" id="lobbyTopicIcon">💻</div>
         <div class="lobby-topic-info">
-          <h1 class="lobby-topic-title" id="lobbyTopicTitle">Động Từ Bất Quy Tắc (V2/V3)</h1>
+          <h1 class="lobby-topic-title" id="lobbyTopicTitle">100 Từ Vựng Chuyên Ngành IT & Kỹ Thuật (Toàn Bộ)</h1>
           <p class="lobby-topic-desc" id="lobbyTopicDesc">
-            Học và phản xạ nhanh các động từ biến đổi đặc biệt quan trọng nhất, nắm vững quy tắc V1 ➔ V2 ➔ V3, không bao giờ nhầm lẫn đuôi -ed hay chính tả.
+            Từ điển thuật ngữ IT thực chiến chuẩn kỹ sư phần mềm: Lập trình, Cloud, Database, AI và An ninh mạng chuẩn quốc tế.
           </p>
         </div>
       </div>

@@ -8,7 +8,7 @@ class UnifiedTypingGame {
     // 1. Phase Master State & 3-Tier Curriculum
     this.currentPhase = "phase_1"; // "phase_1", "phase_2", "phase_3"
     this.currentMode = "vocab"; // "vocab", "tenses", "collocation", "sentence_upgrade", "dictation", "reading", "mistake_vault"
-    this.currentVocabCategory = "irregular_verbs"; // "irregular_verbs", "daily_life", "emotions", "tech_ai"
+    this.currentVocabCategory = "tech_ai"; // "tech_ai", "irregular_verbs", "daily_life", "emotions"
     this.currentItSubCategory = "all"; // "all", "dev", "cloud", "data", "ai_sec"
     this.currentBand = "band_4_5"; // "band_4_5", "band_5_6", "band_6_7", "band_custom"
     this.currentPassageKey = "passage_1";
