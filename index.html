@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LỘ TRÌNH LUYỆN THỰC CHIẾN BAND 4.0 ➔ 7.0 (ENGLISH MASTERY SUITE)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="stage-container">
+    <!-- Ambient Background Glow -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <!-- HUD Header -->
+    <header class="hud-header">
+      <div class="hud-box">
+        <div class="header-icon">🚀</div>
+        <div>
+          <div class="header-subtitle">LỘ TRÌNH CHUYỂN HÓA BAND 4.0 ➔ 7.0</div>
+          <div class="header-title">ENGLISH MASTERY SUITE & PHẢN XẠ THỰC CHIẾN</div>
+        </div>
+      </div>
+
+      <!-- Mode Switcher Tabs (Phân Hệ Theo Từng Giai Đoạn) -->
+      <div class="mode-tab-bar" id="modeTabBar">
+        <!-- PHASE 1 SUB-MODES: NỀN TẢNG CĂN BẢN (MẶC ĐỊNH ACTIVE) -->
+        <div class="phase-mode-group" id="phase1ModeGroup">
+          <button class="mode-tab-btn active" id="tabVocabMode" title="Luyện phản xạ gõ và ghi nhớ từ vựng mới theo chủ đề thiết thực">
+            📖 1.1. HỌC TỪ MỚI CỐT LÕI
+          </button>
+          <button class="mode-tab-btn" id="tabTensesMode" title="Ôn luyện bài tập thực chiến 6 thì kinh điển và bóc tách cạm bẫy">
+            ⚡ 1.2. BÀI TẬP 6 THÌ GÀI BẪY
+          </button>
+        </div>
+
+        <!-- PHASE 2 SUB-MODES: BỨT PHÁ CẤU TRÚC 4.0 ➔ 7.0 -->
+        <div class="phase-mode-group hidden" id="phase2ModeGroup">
+          <button class="mode-tab-btn" id="tabCollocationMode" title="Luyện gõ các cụm từ Collocations cố định theo từng Band">
+            🎯 2.1. COLLOCATIONS
+          </button>
+          <button class="mode-tab-btn" id="tabSentenceUpgradeMode" title="Biến đổi câu đơn 4.0 thành câu phức & cấu trúc điểm cao 7.0">
+            ⚡ 2.2. NÂNG CẤP CÂU 4.0➔7.0
+          </button>
+        </div>
+
+        <!-- PHASE 3 SUB-MODES: THỰC CHIẾN CHUYÊN SÂU -->
+        <div class="phase-mode-group hidden" id="phase3ModeGroup">
+          <button class="mode-tab-btn" id="tabDictationSpeedMode" title="Nghe chép chính tả tốc độ đa tầng 0.75x - 1.25x & bắt lỗi âm đuôi">
+            🎧 3.1. NGHE CHÉP DICTATION
+          </button>
+          <button class="mode-tab-btn" id="tabReadingEvidenceMode" title="Bộ đề Reading học thuật, soi dẫn chứng & bóc tách bẫy Paraphrase">
+            📖 3.2. READING & BẪY
+          </button>
+        </div>
+
+        <!-- SỔ TAY LỖI SAI (CÓ SẴN Ở MỌI PHASE) -->
+        <button class="mode-tab-btn" id="tabMistakeVaultMode" title="Sổ tay lỗi sai cá nhân & thuật toán ôn tập ngắt quãng SRS">
+          ⭐ SỔ TAY LỖI SAI (<span id="vaultCount">0</span>)
+        </button>
+      </div>
+
+      <div class="hud-box score-box">
+        <div class="score-label">ĐIỂM SỐ</div>
+        <div class="score-value" id="scoreDisplay">000000</div>
+        <div class="combo-pill" id="comboPill">COMBO: 0 🔥</div>
+      </div>
+    </header>
+
+    <!-- 3-PHASE MASTER ROADMAP TIMELINE (LỘ TRÌNH 3 GIAI ĐOẠN) -->
+    <nav class="phase-stepper-bar glass-panel" id="phaseStepperBar">
+      <button class="phase-step-btn active" id="btnPhase1" data-phase="phase_1">
+        <div class="phase-step-top">
+          <span class="phase-badge-pill">GIAI ĐOẠN 1</span>
+          <span class="phase-tag-status">🎯 ĐANG HỌC</span>
+        </div>
+        <div class="phase-step-main">
+          <span class="phase-step-icon">🌱</span>
+          <div class="phase-step-texts">
+            <div class="phase-step-title">NỀN TẢNG CĂN BẢN</div>
+            <div class="phase-step-desc">Học Từ Mới Cốt Lõi • Ôn Luyện Bẫy 6 Thì Kinh Điển</div>
+          </div>
+        </div>
+      </button>
+
+      <div class="phase-step-arrow">➔</div>
+
+      <button class="phase-step-btn" id="btnPhase2" data-phase="phase_2">
+        <div class="phase-step-top">
+          <span class="phase-badge-pill">GIAI ĐOẠN 2</span>
+          <span class="phase-tag-status phase-locked">BỨT PHÁ</span>
+        </div>
+        <div class="phase-step-main">
+          <span class="phase-step-icon">🚀</span>
+          <div class="phase-step-texts">
+            <div class="phase-step-title">CẤU TRÚC 4.0 ➔ 7.0</div>
+            <div class="phase-step-desc">Collocations Cố Định • Nâng Cấp Câu Phức Điểm Cao</div>
+          </div>
+        </div>
+      </button>
+
+      <div class="phase-step-arrow">➔</div>
+
+      <button class="phase-step-btn" id="btnPhase3" data-phase="phase_3">
+        <div class="phase-step-top">
+          <span class="phase-badge-pill">GIAI ĐOẠN 3</span>
+          <span class="phase-tag-status phase-locked">LÀM CHỦ</span>
+        </div>
+        <div class="phase-step-main">
+          <span class="phase-step-icon">💎</span>
+          <div class="phase-step-texts">
+            <div class="phase-step-title">THỰC CHIẾN CHUYÊN SÂU</div>
+            <div class="phase-step-desc">Nghe Chép Dictation Tốc Độ • Soi Dẫn Chứng Reading</div>
+          </div>
+        </div>
+      </button>
+    </nav>
+
+    <!-- ROADMAP MILESTONE TRACKER: BỘ LỌC CHỦ ĐỀ & CẤP ĐỘ -->
+    <section class="roadmap-bar glass-panel">
+      <div class="roadmap-header-row">
+        <div class="roadmap-title-area">
+          <span class="roadmap-badge" id="roadmapBadgeLabel">📖 1.1. HỌC TỪ MỚI CỐT LÕI</span>
+          <span class="roadmap-hint" id="currentMilestoneDesc">Giai đoạn 1: Nền tảng từ vựng thiết yếu & Động từ bất quy tắc</span>
+        </div>
+        <div class="roadmap-actions">
+          <!-- Nút Học Lý Thuyết 6 Thì & Ngữ Pháp Hỗ Trợ -->
+          <button class="btn-tenses-guide-open" id="btnOpenTensesGuide" title="Xem cẩm nang công thức, bẫy thì và ngữ pháp hỗ trợ">
+            📘 CẨM NANG 6 THÌ
+          </button>
+
+          <!-- Nút Trợ Lý AI Sinh Đề Tự Động -->
+          <button class="btn-ai-gen-open" id="btnOpenAiGen" title="Dùng AI sáng tác bài tập và câu chuyện gài bẫy theo chủ đề bất kỳ">
+            ✨ AI TẠO BỘ ĐỀ
+          </button>
+
+          <!-- Công Tắc Gõ Bịt Mắt (Dictation Mode) -->
+          <button class="btn-dictation-toggle" id="btnDictationToggle" title="Ẩn gợi ý chữ, chỉ nghe giọng bản xứ rồi gõ lại">
+            🎧 GÕ BỊT MẮT: <span id="dictationStatusLabel">TẮT</span>
+          </button>
+
+          <!-- Nút Nhập Bộ Đề Riêng -->
+          <button class="btn-custom-deck-open" id="btnOpenCustomDeck" title="Nhập danh sách từ vựng/câu hỏi bài đọc từ Excel hoặc file riêng">
+            📥 NHẬP BỘ ĐỀ
+          </button>
+
+          <div class="progress-pill">
+            <span class="pill-label">TIẾN ĐỘ:</span>
+            <span class="pill-val" id="bandProgressText">1 / 12 từ</span>
+          </div>
+
+          <button class="btn-open-notebook" id="btnOpenNotebook" title="Mở sổ tay mẹo vàng đã lưu">
+            📖 SỔ TAY MẸO (<span id="notebookCount">0</span>)
+          </button>
+        </div>
+      </div>
+
+      <!-- DYNAMIC FILTER TABS: ĐỔI LINH HOẠT THEO CHẾ ĐỘ -->
+      <div class="milestone-tabs reading-tabs" id="milestoneTabsBar">
+        <!-- 1. BỘ LỌC CHỦ ĐỀ CHO HỌC TỪ MỚI (PHASE 1.1) -->
+        <div class="filter-tab-group" id="vocabFilterGroup">
+          <button class="milestone-btn active" id="btnVocabIrr" data-cat="irregular_verbs">
+            <span class="ms-icon">⚡</span>
+            <div class="ms-text">
+              <span class="ms-band-tag">CHỦ ĐỀ 1</span>
+              <span class="ms-title">Động Từ Bất Quy Tắc (V2/V3)</span>
+            </div>
+          </button>
+
+          <button class="milestone-btn" id="btnVocabDaily" data-cat="daily_life">
+            <span class="ms-icon">💬</span>
+            <div class="ms-text">
+              <span class="ms-band-tag">CHỦ ĐỀ 2</span>
+              <span class="ms-title">Đời Sống & Giao Tiếp (4.0 - 5.0)</span>
+            </div>
+          </button>
+
+          <button class="milestone-btn" id="btnVocabEmotions" data-cat="emotions">
+            <span class="ms-icon">💖</span>
+            <div class="ms-text">
+              <span class="ms-band-tag">CHỦ ĐỀ 3</span>
+              <span class="ms-title">Cảm Xúc & Tính Từ Cốt Lõi</span>
+            </div>
+          </button>
+
+          <button class="milestone-btn" id="btnVocabTech" data-cat="tech_ai">
+            <span class="ms-icon">💻</span>
+            <div class="ms-text">
+              <span class="ms-band-tag">CHỦ ĐỀ 4 • 100 TỪ IT</span>
+              <span class="ms-title">100 Từ Vựng Chuyên Ngành IT</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- BỘ LỌC PHÂN HỆ CHO 100 TỪ VỰNG IT -->
+        <div class="it-subfilter-bar hidden" id="itSubFilterBar">
+          <span class="it-subfilter-label">PHÂN HỆ IT:</span>
+          <button class="it-chip active" data-it-cat="all">Tất Cả (100)</button>
+          <button class="it-chip" data-it-cat="dev">💻 Lập Trình & Thuật Toán (25)</button>
+          <button class="it-chip" data-it-cat="cloud">☁️ Cloud & DevOps (25)</button>
+          <button class="it-chip" data-it-cat="data">🗄️ Database & Dữ Liệu (25)</button>
+          <button class="it-chip" data-it-cat="ai_sec">🛡️ Bảo Mật & AI (25)</button>
+        </div>
+
+        <!-- 2. BỘ LỌC CẤP ĐỘ BAND CHO 6 THÌ / COLLOCATIONS / NÂNG CẤP CÂU / READING -->
+        <div class="filter-tab-group hidden" id="bandFilterGroup">
+          <button class="milestone-btn" id="btnBand45" data-band="band_4_5">
+            <span class="ms-icon">🔰</span>
+            <div class="ms-text">
+              <span class="ms-band-tag">CẤP ĐỘ 1 • 4.0 - 5.0</span>
+              <span class="ms-title" id="band45Title">Khởi Động & Căn Bản</span>
+            </div>
+          </button>
+
+          <button class="milestone-btn" id="btnBand56" data-band="band_5_6">
+            <span class="ms-icon">🚀</span>
+            <div class="ms-text">
+              <span class="ms-band-tag">CẤP ĐỘ 2 • 5.0 - 6.5</span>
+              <span class="ms-title" id="band56Title">Bứt Phá Học Thuật</span>
+            </div>
+          </button>
+
+          <button class="milestone-btn" id="btnBand67" data-band="band_6_7">
+            <span class="ms-icon">💎</span>
+            <div class="ms-text">
+              <span class="ms-band-tag">CẤP ĐỘ 3 • 6.5 - 7.0+</span>
+              <span class="ms-title" id="band67Title">Mastery Chuyên Sâu</span>
+            </div>
+          </button>
+
+          <button class="milestone-btn" id="btnBandCustom" data-band="band_custom">
+            <span class="ms-icon">🎯</span>
+            <div class="ms-text">
+              <span class="ms-band-tag">BỘ ĐỀ RIÊNG / AI</span>
+              <span class="ms-title" id="customDeckTitle">Tự Nhập / AI Sáng Tác</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Linear Neon Progress Track -->
+      <div class="roadmap-progress-track">
+        <div class="roadmap-progress-bar" id="roadmapProgressBar" style="width: 20%;"></div>
+      </div>
+    </section>
+
+    <!-- Main Center: Centered Workspace for Vocab/Tenses/Colloc, 2-Column Split for Reading -->
+    <main class="main-arena single-column" id="mainArena">
+      <!-- CỘT TRÁI: KHUNG BÀI ĐỌC HỌC THUẬT (PASSAGE VIEWER PANE) -->
+      <div class="arena-left-pane">
+        <section class="passage-viewer-pane glass-panel" id="passageViewerPane">
+          <div class="pv-header">
+            <div class="pv-title-box">
+              <span class="pv-code-badge" id="pvCodeBadge">READING PASSAGE 1</span>
+              <span class="pv-topic-tag" id="pvTopicTag">KHOA HỌC MÔI TRƯỜNG</span>
+              <h2 class="pv-title" id="pvTitle">The Hidden Threat of Marine Microplastics</h2>
+            </div>
+            <div class="pv-actions">
+              <button class="btn-pv-action btn-highlight-evidence" id="btnHighlightEvidence" title="Tự động cuộn và làm phát sáng đoạn văn chứa dẫn chứng">
+                🔍 SOI DẪN CHỨNG
+              </button>
+              <button class="btn-pv-action btn-toggle-passage" id="btnTogglePassage" title="Thu gọn hoặc mở rộng khung bài đọc">
+                📐 THU GỌN / MỞ RỘNG
+              </button>
+            </div>
+          </div>
+          <div class="pv-subtitle" id="pvSubtitle">
+            Tác Động Khôn Lường Của Vi Nhựa Đối Với Hệ Sinh Thái Biển & Sức Khỏe Con Người
+          </div>
+          <div class="passage-body-scroll" id="passageBodyScroll">
+            <!-- Paragraphs A, B, C, D rendered dynamically -->
+          </div>
+        </section>
+      </div>
+
+      <!-- CỘT PHẢI: KHU VỰC CÂU HỎI, GÕ TỪ VỰNG & TRẠNG THÁI -->
+      <div class="arena-right-pane">
+        <!-- CARD MODULE 1.1: HỌC TỪ MỚI CỐT LÕI (PHASE 1 - MẶC ĐỊNH HIỂN THỊ) -->
+        <section class="vocab-card glass-panel" id="vocabCard">
+          <div class="card-top-header">
+            <div class="card-badge-row">
+              <span class="vocab-badge" id="vocabBadge">📖 TỪ VỰNG CỐT LÕI (BAND 4.0 - 5.0)</span>
+              <span class="topic-tag" id="vocabTopicTag">Động Từ Bất Quy Tắc</span>
+              <span class="ipa-tag" id="vocabIPA">/bɔːt/</span>
+            </div>
+            <button class="btn-tts-speak" id="btnSpeakVocab" title="Nghe phát âm chuẩn người bản xứ (Phím TAB)">
+              🔊 PHÁT ÂM (TAB)
+            </button>
+          </div>
+
+          <div class="vocab-banner" id="vocabBanner">
+            <div class="vocab-prompt-badge">🎯 NGHĨA TIẾNG VIỆT:</div>
+            <div class="vocab-target-word hidden" id="vocabTargetWord" style="display: none;"></div>
+            <div class="vocab-meaning" id="vocabMeaning">Đã mua (dạng quá khứ V2 của 'buy')</div>
+          </div>
+
+          <div class="vocab-context" id="vocabContextText">
+            Yesterday evening, Alex (buy) <span class="blank-indicator">________</span> a new English grammar book at the mall.
+          </div>
+
+          <div class="vocab-tip-box" id="vocabTipBox">
+            💡 <strong>Mẹo ghi nhớ chính tả & cạm bẫy:</strong> <span id="vocabTipText">Gia đình vần -OUGHT: buy ➔ BOUGHT, bring ➔ BROUGHT, think ➔ THOUGHT. Cấm viết 'buyed' hay đảo chữ 'bougth'!</span>
+          </div>
+        </section>
+
+        <!-- CARD MODULE 1.2: BÀI TẬP 6 THÌ GÀI BẪY (PHASE 1.2) -->
+        <section class="grammar-tenses-card glass-panel hidden" id="grammarTensesCard">
+          <div class="card-top-header">
+            <div class="card-badge-row">
+              <span class="tenses-badge" id="tensesBadge">⚡ BÀI TẬP 6 THÌ KINH ĐIỂN</span>
+              <span class="topic-tag" id="tensesTopicTag">Hiện Tại Đơn & Ngôi Thứ 3</span>
+              <span class="verb-target-tag" id="tensesVerbTag">ĐỘNG TỪ: <strong>DRINK</strong></span>
+            </div>
+            <div class="card-header-actions">
+              <button class="btn-card-guide" id="btnCardStudyTense" title="Xem cẩm nang công thức và dấu hiệu của thì này">
+                📘 CẨM NANG THÌ
+              </button>
+              <button class="btn-tts-speak" id="btnSpeakTenses" title="Nghe phát âm toàn bộ câu tiếng Anh (Phím TAB)">
+                🔊 PHÁT ÂM CÂU (TAB)
+              </button>
+            </div>
+          </div>
+
+          <div class="tenses-story-banner">
+            <div class="tenses-story-title" id="tensesStoryTitle">Thói Quen Buổi Sáng Của Alex</div>
+          </div>
+
+          <div class="tenses-context-text" id="tensesContextText">
+            He usually (drink) <span class="blank-indicator">________</span> hot coffee before heading to the office.
+          </div>
+
+          <div class="tenses-trap-alert" id="tensesTrapAlert">
+            💡 <strong>Dấu hiệu & Gợi ý:</strong> <span id="tensesHintText">Dấu hiệu 'usually' (thói quen) + Chủ ngữ 'He' (ngôi thứ 3 số ít)</span>
+          </div>
+        </section>
+
+        <!-- CARD MODULE 2.1: COLLOCATIONS & CHUNKS (PHASE 2.1) -->
+        <section class="collocation-card glass-panel hidden" id="collocationCard">
+          <div class="card-top-header">
+            <div class="card-badge-row">
+              <span class="colloc-badge" id="collocBadge">🎯 COLLOCATION CHUNK</span>
+              <span class="topic-tag" id="collocTopicTag">Daily Life</span>
+              <span class="ipa-tag" id="collocIPA">/meɪk ə dɪˈsɪʒn/</span>
+            </div>
+            <button class="btn-tts-speak" id="btnSpeakColloc" title="Nghe phát âm chuẩn người bản xứ (Phím TAB)">
+              🔊 PHÁT ÂM (TAB)
+            </button>
+          </div>
+
+          <div class="colloc-banner" id="collocBanner">
+            <div class="chunk-title" id="collocChunkTitle">MAKE A ________</div>
+            <div class="chunk-meaning" id="collocMeaning">Đưa ra quyết định (không dùng do a decision)</div>
+          </div>
+
+          <div class="colloc-context" id="collocContextText">
+            After discussing with his family, he finally had to make a crucial <span class="blank-indicator">________</span> about his career.
+          </div>
+
+          <div class="colloc-tip-box" id="collocTipBox">
+            💡 <strong>Mẹo kết hợp tự nhiên:</strong> <span id="collocTipText">Người Việt hay nói 'do a decision'. Người bản xứ BẮT BUỘC dùng 'make a decision'.</span>
+          </div>
+        </section>
+
+        <!-- CARD MODULE 2: SENTENCE UPGRADE 4.0 ➔ 7.0 -->
+        <section class="sentence-upgrade-card glass-panel hidden" id="sentenceUpgradeCard">
+          <div class="card-top-header">
+            <div class="card-badge-row">
+              <span class="upgrade-badge">⚡ NÂNG CẤP CÂU 4.0 ➔ 7.0</span>
+              <span class="pattern-badge" id="upgradePatternBadge">Inversion / Cleft / Participle</span>
+            </div>
+            <button class="btn-tts-speak" id="btnSpeakUpgrade" title="Nghe câu nâng cấp 7.0 đọc chuẩn (Phím TAB)">
+              🔊 PHÁT ÂM CÂU 7.0 (TAB)
+            </button>
+          </div>
+
+          <!-- So Sánh 2 Tầng: Câu 4.0 vs Câu 7.0 -->
+          <div class="upgrade-comparison-container">
+            <div class="upgrade-row basic-row">
+              <div class="upgrade-row-label">❌ CÂU GỐC BAND 4.0 (ĐƠN ĐIỆU):</div>
+              <div class="upgrade-row-text" id="upgradeBasicText">
+                Many people drive cars every day, so the air in the city becomes very dirty.
+              </div>
+            </div>
+
+            <div class="upgrade-divider">
+              <span class="divider-arrow">⬇️ BIẾN ĐỔI THÀNH CẤU TRÚC 7.0 ⬇️</span>
+            </div>
+
+            <div class="upgrade-row advanced-row">
+              <div class="upgrade-row-label">✨ CÂU NÂNG CẤP BAND 7.0 (ACADEMIC):</div>
+              <div class="upgrade-row-text" id="upgradeAdvancedText">
+                The proliferation of private vehicles has directly <span class="blank-indicator">________</span> to alarming levels of urban air pollution.
+              </div>
+            </div>
+          </div>
+
+          <div class="upgrade-why-box" id="upgradeWhyBox">
+            💡 <strong>Tại sao câu 7.0 ăn điểm:</strong> <span id="upgradeWhyText">Sử dụng danh từ hóa 'The proliferation of...' và động từ 'contributed to' thay vì cấu trúc 'so' lỏng lẻo.</span>
+          </div>
+        </section>
+
+        <!-- CARD MODULE 3: DICTATION SPEED AUDITION -->
+        <section class="dictation-speed-card glass-panel hidden" id="dictationSpeedCard">
+          <div class="card-top-header">
+            <div class="card-badge-row">
+              <span class="dict-badge">🎧 NGHE CHÉP CHÍNH TẢ TỐC ĐỘ CAO</span>
+              <span class="topic-tag" id="dictTopicTag">Phân biệt âm đuôi & Nối âm</span>
+            </div>
+            <!-- Bộ nút chọn tốc độ âm thanh -->
+            <div class="speed-controls-group">
+              <button class="btn-speed-opt" id="btnSpeed075" data-speed="0.75" title="Tốc độ chậm: Nghe rõ âm đuôi /s/, /z/, /ed/">0.75x</button>
+              <button class="btn-speed-opt active" id="btnSpeed100" data-speed="1.0" title="Tốc độ tự nhiên chuẩn bản xứ">1.0x</button>
+              <button class="btn-speed-opt" id="btnSpeed125" data-speed="1.25" title="Tốc độ nhanh: IELTS Section 3/4">1.25x</button>
+            </div>
+          </div>
+
+          <div class="dict-audio-box">
+            <div class="dict-wave-container">
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+            </div>
+            <button class="btn-tts-speak btn-dict-replay-main" id="btnSpeakDictation" title="Nghe câu phát âm chuẩn (Phím TAB)">
+              🔊 NGHE CÂU (PHÍM TAB)
+            </button>
+          </div>
+
+          <div class="dict-context-text" id="dictContextText">
+            Alex always (checks) <span class="blank-indicator">________</span> his emails before leaving the office.
+          </div>
+
+          <div class="dict-meaning-text" id="dictMeaningText">
+            Alex luôn kiểm tra email trước khi rời văn phòng.
+          </div>
+
+          <div class="dict-trap-alert" id="dictTrapAlert">
+            ⚠️ <strong>Cảnh báo bẫy phát âm:</strong> <span id="dictTrapText">Chú ý âm đuôi /ks/ ở từ CHECKS sau ngôi thứ 3 số ít 'Alex'. Người Việt hay nuốt mất âm /s/.</span>
+          </div>
+        </section>
+
+        <!-- CARD MODULE 4: READING QUESTION & EVIDENCE CARD -->
+        <section class="grammar-story-card glass-panel hidden" id="grammarStoryCard">
+          <div class="grammar-header">
+            <span class="grammar-badge" id="grammarStoryTag">📝 SUMMARY COMPLETION (1 TỪ DUY NHẤT)</span>
+            <span class="grammar-verb-prompt" id="grammarVerbPrompt">DẠNG BÀI: <strong>TÌM 1 TỪ TRONG BÀI ĐỌC</strong></span>
+            <div class="card-header-actions">
+              <button class="btn-card-guide" id="btnCardStudyTense" title="Xem vị trí dẫn chứng trong bài đọc">
+                📍 VỊ TRÍ DẪN CHỨNG
+              </button>
+              <button class="btn-tts-speak" id="btnSpeakGrammar" title="Nghe đọc câu hỏi chuẩn Anh-Mỹ (Phím TAB)">
+                🔊 PHÁT ÂM CÂU (TAB)
+              </button>
+            </div>
+          </div>
+          <div class="grammar-context-text" id="grammarContextText">
+            Under prolonged sunlight and wave turbulence, synthetic plastic debris begins to <span class="blank-indicator">________</span> into smaller pieces.
+          </div>
+          <div class="grammar-hint-note" id="grammarHintNote">
+            💡 Manh mối tại Paragraph A: Quét từ khóa 'solar ultraviolet radiation' và 'minute fragments'.
+          </div>
+        </section>
+
+        <!-- DICTATION MODE OVERLAY (HIỂN THỊ KHI BẬT GÕ BỊT MẮT TOÀN DIỆN) -->
+        <section class="dictation-overlay glass-panel hidden" id="dictationOverlay">
+          <div class="dictation-wave-box">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+          <div class="dictation-title">🎧 CHẾ ĐỘ GÕ BỊT MẮT ĐANG BẬT</div>
+          <div class="dictation-desc" id="dictationInstruction">
+            Hãy lắng nghe giọng đọc người bản xứ và gõ lại đúng từ vựng bạn nghe được!
+          </div>
+          <div class="dictation-action-row">
+            <button class="btn-dict-action" id="btnDictReplay">🔁 NGHE LẠI (PHÍM TAB)</button>
+            <button class="btn-dict-action btn-dict-peek" id="btnDictPeek">👁️ XEM HÉ LỘ GỢI Ý (3s)</button>
+          </div>
+        </section>
+
+        <!-- Word Slots: Toàn bộ chữ cái đều ẩn [_], không gợi ý sẵn -->
+        <section class="word-slots-container" id="wordSlotsContainer">
+          <!-- Slots e.g. [ _ ] [ _ ] [ _ ] [ _ ] [ _ ] [ _ ] [ _ ] -->
+        </section>
+
+        <!-- Typing Status Bar & Peek Button -->
+        <div class="status-bar">
+          <span class="status-icon">⌨️</span>
+          <span id="statusMessage">Hãy gõ từng chữ cái để hoàn thành từ!</span>
+          <button class="btn-peek" id="btnPeek">👁️ MỞ 1 CHỮ GỢI Ý (+1 PHÍM)</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- MEME POPUP REACTION (TỰ TẮT SAU 1.8S HOẶC ẤN PHÍM/ENTER TẮT NGAY) -->
+    <div class="meme-modal-overlay hidden" id="memeModal">
+      <div class="meme-card glass-panel" id="memeCard">
+        <div class="meme-header">
+          <span class="meme-badge">🎉 CHUẨN ĐÉT!</span>
+          <span class="meme-combo-score" id="memeComboText">+1000 ĐIỂM!</span>
+        </div>
+        <div class="meme-media-box">
+          <img id="memeImage" src="" alt="Funny Meme GIF">
+          <div class="meme-caption" id="memeCaption">ĐỈNH NÓC KỊCH TRẦN BAY PHẤP PHỚI!</div>
+        </div>
+        <div class="meme-word-recap" id="memeWordRecap">
+          ĐÁP ÁN: <span class="highlight-word" id="recapWord">DEGRADE</span> ➔ <span id="recapMeaning">Phân rã thành mảnh nhỏ</span>
+        </div>
+        <!-- Sleek Auto-Dismiss Progress Bar -->
+        <div class="auto-dismiss-track">
+          <div class="auto-dismiss-bar" id="dismissBar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- READING / EXPLANATION MODAL (GOLDEN MODAL CARD) -->
+    <div class="explanation-modal-overlay hidden" id="explanationModal">
+      <div class="explanation-card glass-panel golden-modal-card">
+        <div class="expl-header">
+          <div class="expl-header-left">
+            <span class="expl-badge-band" id="explBandBadge">LỘ TRÌNH 4.0 ➔ 7.0</span>
+            <span class="expl-title-tag">✨ PHÂN TÍCH CHI TIẾT & MẸO VÀNG</span>
+          </div>
+          <span class="expl-story-name" id="explStoryTitle">Summary Completion</span>
+        </div>
+
+        <!-- Target Answer Summary Banner -->
+        <div class="expl-answer-banner">
+          <div class="banner-label">ĐÁP ÁN ĐÚNG:</div>
+          <div class="banner-word" id="explAnswerWord">DEGRADE</div>
+          <button class="btn-tts-modal" id="btnSpeakModal" title="Nghe lại phát âm đáp án">🔊</button>
+          <div class="banner-context" id="explAnswerContext">...solar ultraviolet radiation causes them to degrade into minute fragments.</div>
+        </div>
+
+        <div class="expl-body">
+          <!-- 1. VỊ TRÍ DẪN CHỨNG / QUY TẮC -->
+          <div class="expl-row evidence-row" id="explEvidenceRow">
+            <div class="expl-icon">📍</div>
+            <div>
+              <div class="expl-label" id="explRuleLabel">QUY TẮC CỐT LÕI (RULE):</div>
+              <div class="expl-val" id="explRuleVal">Paragraph A: "...solar ultraviolet radiation causes them to degrade into minute fragments."</div>
+            </div>
+          </div>
+
+          <!-- 2. BẢNG GIẢI MÃ PARAPHRASE / NÂNG CẤP -->
+          <div class="expl-row paraphrase-row" id="explParaphraseRow">
+            <div class="expl-icon">🔄</div>
+            <div>
+              <div class="expl-label" id="explExampleLabel">BẢNG GIẢI MÃ PARAPHRASE (TỪ ĐỀ BÀI ➔ TỪ BÀI ĐỌC):</div>
+              <div class="expl-val" id="explExampleVal">
+                break down into smaller pieces ➔ degrade into minute fragments
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. CẠM BẪY HAY MẮC PHẢI -->
+          <div class="expl-row trap-row">
+            <div class="expl-icon">⚠️</div>
+            <div>
+              <div class="expl-label">CẠM BẪY CẦN TRÁNH (THE TRAP):</div>
+              <div class="expl-val" id="explTrapVal">90% người học nhầm lẫn giữa 'decay' và 'degrade'.</div>
+            </div>
+          </div>
+
+          <!-- 4. MẸO GHI NHỚ KHẮC CỐT GHI TÂM -->
+          <div class="expl-row memory-row">
+            <div class="expl-icon">💡</div>
+            <div>
+              <div class="expl-label">MẸO GHI NHỚ SIÊU TỐC (MEMORY HACK):</div>
+              <div class="expl-val" id="explHackVal">Dự đoán từ loại trước chỗ trống rồi mới gõ!</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="expl-footer">
+          <button class="btn-save-notebook" id="btnSaveNotebook">⭐ LƯU VÀO SỔ TAY MẸO</button>
+          <button class="btn-expl-next" id="btnExplNext">TIẾP TỤC CÂU TIẾP THEO (ENTER) ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SỔ TAY BỎ TÚI (NOTEBOOK MODAL) -->
+    <div class="notebook-modal-overlay hidden" id="notebookModal">
+      <div class="notebook-card glass-panel">
+        <div class="notebook-header">
+          <div class="nb-title-group">
+            <span class="nb-icon">📚</span>
+            <div>
+              <div class="nb-main-title">SỔ TAY MẸO VÀNG & BẪY THỰC CHIẾN</div>
+              <div class="nb-sub-title">Tổng hợp các bí kíp khắc cốt ghi tâm đã mở khóa trên lộ trình</div>
+            </div>
+          </div>
+          <button class="btn-close-nb" id="btnCloseNotebook">✕ ĐÓNG</button>
+        </div>
+
+        <div class="notebook-filter-bar">
+          <button class="nb-filter-btn active" data-filter="all">TẤT CẢ (<span id="nbFilterAllCount">0</span>)</button>
+          <button class="nb-filter-btn" data-filter="band_4_5">BAND 4.0 - 5.0 (<span id="nbFilter45Count">0</span>)</button>
+          <button class="nb-filter-btn" data-filter="band_5_6">BAND 5.0 - 6.5 (<span id="nbFilter56Count">0</span>)</button>
+          <button class="nb-filter-btn" data-filter="band_6_7">BAND 6.5 - 7.0+ (<span id="nbFilter67Count">0</span>)</button>
+          <button class="nb-filter-btn" data-filter="band_custom">BỘ ĐỀ RIÊNG (<span id="nbFilterCustomCount">0</span>)</button>
+        </div>
+
+        <div class="notebook-list-container" id="notebookListContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 5: MISTAKE VAULT & SRS DAILY REVIEW MODAL -->
+    <div class="mistake-vault-modal-overlay hidden" id="mistakeVaultModal">
+      <div class="mistake-vault-card glass-panel">
+        <div class="mv-header">
+          <div class="mv-title-group">
+            <span class="mv-icon">⭐</span>
+            <div>
+              <div class="mv-main-title">MISTAKE VAULT • SỔ TAY LỖI SAI & ÔN TẬP NGẮT QUÃNG (SRS)</div>
+              <div class="mv-sub-title">Mọi câu hoặc từ gõ sai đều được tự động lưu trữ tại đây để bạn luyện lại cho đến khi thành thạo</div>
+            </div>
+          </div>
+          <button class="btn-close-mv" id="btnCloseMistakeVault">✕ ĐÓNG</button>
+        </div>
+
+        <div class="mv-stats-bar">
+          <div class="mv-stat-box">
+            <span class="stat-number" id="mvTotalCount">0</span>
+            <span class="stat-label">LỖI CẦN ÔN</span>
+          </div>
+          <div class="mv-stat-box">
+            <span class="stat-number" id="mvReviewedCount">0</span>
+            <span class="stat-label">ĐÃ KHẮC PHỤC</span>
+          </div>
+          <button class="btn-srs-practice-now" id="btnSrsPracticeNow">
+            🔥 BẮT ĐẦU ÔN TẬP LẠI CÁC CÂU SAI BẰNG BÀN PHÍM
+          </button>
+          <button class="btn-clear-vault" id="btnClearVault">
+            🗑️ XÓA HẾT LỖI
+          </button>
+        </div>
+
+        <div class="mv-list-container" id="mvListContainer">
+          <!-- Rendered dynamically from localStorage mistakes -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 1: CẨM NANG 6 THÌ KINH ĐIỂN (HỌC & ÔN TẬP TRƯỚC KHI THỰC CHIẾN) -->
+    <div class="tenses-guide-modal-overlay hidden" id="tensesGuideModal">
+      <div class="tenses-guide-card glass-panel">
+        <div class="tg-header">
+          <div class="tg-title-group">
+            <span class="tg-icon">📘</span>
+            <div>
+              <div class="tg-main-title">CẨM NANG 6 THÌ KINH ĐIỂN • HỌC VÀ ÔN LÝ THUYẾT TRƯỚC</div>
+              <div class="tg-sub-title">Nắm chắc công thức, dấu hiệu nhận biết thần tốc, bẫy thi cử và thần chú trước khi gõ phím</div>
+            </div>
+          </div>
+          <button class="btn-close-tg" id="btnCloseTensesGuide">✕ ĐÓNG</button>
+        </div>
+
+        <!-- Thanh chuyển tab 6 thì -->
+        <div class="tg-tab-bar" id="tgTabBar">
+          <!-- Rendered dynamically from tenses_guide.js -->
+        </div>
+
+        <!-- Khung nội dung chi tiết của thì đang chọn -->
+        <div class="tg-content-box" id="tgContentBox">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: TRỢ LÝ AI SINH BỘ ĐỀ TỰ ĐỘNG (AI CHALLENGE GENERATOR) -->
+    <div class="ai-gen-modal-overlay hidden" id="aiGeneratorModal">
+      <div class="ai-gen-card glass-panel">
+        <div class="ai-header">
+          <div class="ai-title-group">
+            <span class="ai-icon">✨</span>
+            <div>
+              <div class="ai-main-title">TRỢ LÝ AI TẠO BỘ ĐỀ THEO CHỦ ĐỀ CỦA BẠN</div>
+              <div class="ai-sub-title">Sử dụng Trí Tuệ Nhân Tạo để sáng tác câu chuyện, gài bẫy và đúc kết Mẹo Vàng tự động</div>
+            </div>
+          </div>
+          <button class="btn-close-ai" id="btnCloseAiGen">✕ ĐÓNG</button>
+        </div>
+
+        <div class="ai-body">
+          <div class="ai-input-group">
+            <label for="aiTopicInput">CHỦ ĐỀ BẠN MUỐN LUYỆN TẬP:</label>
+            <input type="text" id="aiTopicInput" placeholder="Ví dụ: Phỏng vấn xin việc, Du lịch, Công nghệ AI..." value="Phỏng vấn xin việc tại công ty công nghệ">
+          </div>
+
+          <!-- Gợi ý chủ đề nhanh (Quick Topic Chips) -->
+          <div class="ai-chips-row">
+            <span class="chips-label">Gợi ý nhanh:</span>
+            <button class="ai-chip-btn" data-topic="Một ngày làm việc hài hước của lập trình viên AI">🤖 Dân IT & AI</button>
+            <button class="ai-chip-btn" data-topic="Chuyến du lịch khám phá Đà Lạt bị hỏng xe">🚗 Du lịch & Sự cố</button>
+            <button class="ai-chip-btn" data-topic="Buổi phỏng vấn xin việc căng thẳng bằng tiếng Anh">💼 Phỏng vấn xin việc</button>
+            <button class="ai-chip-btn" data-topic="Một buổi hẹn hò lãng mạn tại nhà hàng Pháp">🍷 Hẹn hò nhà hàng</button>
+          </div>
+
+          <div class="ai-options-grid">
+            <div class="ai-option-item">
+              <label for="aiBandSelect">CẤP ĐỘ MỤC TIÊU:</label>
+              <select id="aiBandSelect">
+                <option value="Band 4.0 - 5.0" selected>🔰 Band 4.0 - 5.0 (Cơ bản & đời sống hàng ngày)</option>
+                <option value="Band 5.0 - 6.5">🚀 Band 5.0 - 6.5 (Học thuật AWL & Câu phức)</option>
+                <option value="Band 6.5 - 7.0+">💎 Band 6.5 - 7.0+ (Mastery C1 & Đảo ngữ)</option>
+              </select>
+            </div>
+
+            <div class="ai-option-item">
+              <label for="aiCountSelect">SỐ LƯỢNG CÂU:</label>
+              <select id="aiCountSelect">
+                <option value="3">3 Câu (Khởi động nhanh)</option>
+                <option value="5" selected>5 Câu (Khuyên dùng - Chuẩn 1 màn chơi)</option>
+                <option value="8">8 Câu (Thử thách chuyên sâu)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Google Gemini API Key (Tùy chọn) -->
+          <div class="ai-api-key-box">
+            <div class="key-header">
+              <label for="aiApiKeyInput">GOOGLE GEMINI API KEY (TÙY CHỌN - MIỄN PHÍ):</label>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link-get-key">Lấy key miễn phí (10s) ↗</a>
+            </div>
+            <input type="password" id="aiApiKeyInput" placeholder="Dán API Key Gemini của bạn ở đây để kết nối trực tiếp với AI..." value="">
+            <span class="key-note">💡 Nếu không có API Key, hệ thống vẫn có sẵn bộ <strong>Smart AI Scenarios</strong> phong phú để bạn tạo đề và chơi ngay lập tức!</span>
+          </div>
+
+          <!-- AI Generation Status / Loading -->
+          <div class="ai-status-panel hidden" id="aiStatusPanel">
+            <div class="ai-spinner"></div>
+            <div class="ai-status-msg" id="aiStatusMsg">AI đang suy nghĩ và sáng tác câu chuyện gài bẫy...</div>
+          </div>
+        </div>
+
+        <div class="ai-footer">
+          <button class="btn-ai-cancel" id="btnCancelAiGen">HỦY BỎ</button>
+          <button class="btn-ai-submit" id="btnSubmitAiGen">✨ BẮT ĐẦU TẠO BỘ ĐỀ BẰNG AI</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRÌNH TẠO & NHẬP BỘ ĐỀ RIÊNG (CUSTOM DECK MODAL) -->
+    <div class="custom-deck-modal-overlay hidden" id="customDeckModal">
+      <div class="custom-deck-card glass-panel">
+        <div class="cd-header">
+          <div class="cd-title-group">
+            <span class="cd-icon">📥</span>
+            <div>
+              <div class="cd-main-title">TẠO & NHẬP BỘ ĐỀ RIÊNG CỦA BẠN</div>
+              <div class="cd-sub-title">Dán trực tiếp từ Excel, Google Sheets, Quizlet hoặc nhập tay</div>
+            </div>
+          </div>
+          <button class="btn-close-cd" id="btnCloseCustomDeck">✕ ĐÓNG</button>
+        </div>
+
+        <div class="cd-body">
+          <div class="cd-meta-row">
+            <div class="cd-input-group">
+              <label for="customDeckNameInput">TÊN BỘ ĐỀ:</label>
+              <input type="text" id="customDeckNameInput" placeholder="Ví dụ: 30 Từ Vựng Unit 1 Lớp 12, IELTS Speaking..." value="Bộ Từ Vựng Riêng Của Tôi">
+            </div>
+            <div class="cd-quick-actions">
+              <button class="btn-cd-sample" id="btnLoadSampleDeck">📝 DÙNG MẪU THỬ</button>
+              <button class="btn-cd-clear" id="btnClearCustomDeck">🗑️ XÓA HẾT</button>
+            </div>
+          </div>
+
+          <div class="cd-format-guide">
+            <div class="guide-title">💡 ĐỊNH DẠNG HỖ TRỢ (MỖI DÒNG LÀ 1 CÂU):</div>
+            <div class="guide-code">
+              Cách 1 (Excel): <code>Từ_vựng [Tab] Nghĩa_tiếng_Việt [Tab] Mẹo_nhớ_hoặc_Ví_dụ</code><br>
+              Cách 2 (Gạch đứng): <code>ACCOMMODATION | Chỗ ở tiện nghi | Nhớ 2 chữ C và 2 chữ M</code>
+            </div>
+          </div>
+
+          <textarea id="customDeckTextarea" placeholder="Dán danh sách từ vựng từ Excel hoặc nhập theo cú pháp:&#10;ACCOMMODATION | Chỗ ở tiện nghi | Nhớ 2 chữ C và 2 chữ M&#10;ENVIRONMENT | Môi trường sống | Có chữ N đứng sau O&#10;SUSTAINABLE | Bền vững lâu dài | Thường gặp trong IELTS Writing"></textarea>
+
+          <div class="cd-preview-bar">
+            <span class="cd-count-badge" id="cdParsedCount">Đã nhận diện: 0 mục hợp lệ</span>
+            <span class="cd-tip">Dữ liệu được lưu trữ an toàn trong trình duyệt của bạn</span>
+          </div>
+        </div>
+
+        <div class="cd-footer">
+          <button class="btn-cd-cancel" id="btnCancelCustomDeck">HỦY BỎ</button>
+          <button class="btn-cd-save" id="btnSaveCustomDeck">⭐ LƯU & BẮT ĐẦU CHƠI NGAY</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Control Bar (Tải Nhạc Custom, Tải File Meme, Âm lượng) -->
+    <footer class="bottom-bar glass-panel">
+      <div class="bottom-left">
+        <!-- Custom Audio Input -->
+        <label for="customAudioInput" class="btn-custom-tool">
+          🎵 TẢI NHẠC (.MP3)
+        </label>
+        <input type="file" id="customAudioInput" accept="audio/*" style="display: none;">
+
+        <!-- Custom Meme Files Upload -->
+        <label for="customMemeFiles" class="btn-custom-tool btn-meme-upload">
+          🖼️ THÊM ẢNH MEME TỪ MÁY
+        </label>
+        <input type="file" id="customMemeFiles" accept="image/*" multiple style="display: none;">
+
+        <span class="status-summary" id="memeCountDisplay">Meme: 7 có sẵn</span>
+      </div>
+
+      <div class="bottom-right">
+        <button class="btn-ctrl" id="btnAudioToggle">🔊 BẬT / TẮT NHẠC</button>
+        <div class="volume-box">
+          <span>🔈</span>
+          <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.7">
+        </div>
+      </div>
+
+      <!-- Hidden Audio Element for Custom Music -->
+      <audio id="customAudioElem" loop preload="auto"></audio>
+    </footer>
+  </div>
+
+  <!-- Script Modules -->
+  <script src="memes.js"></script>
+  <script src="vocab_data.js"></script>
+  <script src="collocation_data.js"></script>
+  <script src="sentence_upgrade_data.js"></script>
+  <script src="dictation_data.js"></script>
+  <script src="reading_data.js"></script>
+  <script src="grammar_challenges.js"></script>
+  <script src="tenses_guide.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

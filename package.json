@@ -1,0 +1,21 @@
+{
+  "name": "english-typing-web",
+  "version": "1.0.0",
+  "description": "English Typing Audition - Lộ trình thực chiến Band 4.0 to 7.0 & 100 từ vựng IT",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -l 3000 .",
+    "dev": "npx serve -l 3000 .",
+    "preview": "npx serve -l 3000 ."
+  },
+  "keywords": [
+    "english-typing",
+    "ielts",
+    "grammar",
+    "audition",
+    "typing-game",
+    "it-vocabulary"
+  ],
+  "author": "",
+  "license": "MIT"
+}
