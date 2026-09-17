@@ -318,8 +318,9 @@ class UnifiedTypingGame {
       volSlider: document.getElementById("volSlider"),
       btnOpenOnlineMusic: document.getElementById("btnOpenOnlineMusic"),
       onlineMusicModal: document.getElementById("onlineMusicModal"),
-      btnCloseOnlineMusic: document.getElementById("btnCloseOnlineMusic"),
       onlineMusicUrlInput: document.getElementById("onlineMusicUrlInput"),
+      btnPasteOnlineMusic: document.getElementById("btnPasteOnlineMusic"),
+      btnClearOnlineMusic: document.getElementById("btnClearOnlineMusic"),
       btnPlayOnlineMusic: document.getElementById("btnPlayOnlineMusic"),
       btnStopOnlineMusic: document.getElementById("btnStopOnlineMusic"),
       btnSaveCloseOnlineMusic: document.getElementById("btnSaveCloseOnlineMusic"),
@@ -1202,6 +1203,15 @@ class UnifiedTypingGame {
       this.dom.explanationModal.classList.add("hidden");
     }
     this.loadCurrentQuestion();
+
+    // Tự động kích hoạt lại bàn phím ảo cho câu tiếp theo trên mobile
+    if (this.isMobileDevice) {
+      setTimeout(() => {
+        if (this.dom.mobileNativeInput) {
+          this.dom.mobileNativeInput.focus({ preventScroll: true });
+        }
+      }, 250);
+    }
   }
 
   updateProgressUI(current, total) {
@@ -1305,6 +1315,14 @@ class UnifiedTypingGame {
     this.isMemeActive = true;
     this.playFanfare();
 
+    // 1. Ẩn bàn phím ảo điện thoại ngay khi hoàn thành từ để xem meme thoáng màn hình
+    if (this.dom.mobileNativeInput) {
+      this.dom.mobileNativeInput.blur();
+    }
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
+
     this.combo++;
     const points = 500 + this.combo * 200;
     this.score += points;
@@ -1312,31 +1330,34 @@ class UnifiedTypingGame {
     this.dom.comboPill.textContent = `COMBO: ${this.combo} 🔥`;
 
     const meme = this.memesList[Math.floor(Math.random() * this.memesList.length)];
-    this.dom.memeImage.src = meme.url;
-    this.dom.memeCaption.textContent = meme.caption;
-    this.dom.memeComboText.textContent = `+${points} ĐIỂM!`;
-    this.dom.recapWord.textContent = this.targetWord;
+    if (this.dom.memeImage) this.dom.memeImage.src = meme.url;
+    if (this.dom.memeCaption) this.dom.memeCaption.textContent = meme.caption;
+    if (this.dom.memeComboText) this.dom.memeComboText.textContent = `+${points} ĐIỂM!`;
+    if (this.dom.recapWord) this.dom.recapWord.textContent = this.targetWord;
 
     const meaning = this.currentChallenge.meaning 
       || this.currentChallenge.chunk 
       || this.currentChallenge.goldenTip?.rule 
       || "Hoàn thành chuẩn xác";
-    this.dom.recapMeaning.textContent = meaning;
+    if (this.dom.recapMeaning) this.dom.recapMeaning.textContent = meaning;
 
     this.autoSaveTipToNotebook(this.currentChallenge);
 
     // Phát âm giọng đọc ăn mừng từ vừa gõ
     this.speakText(this.targetWord, 0.9);
 
-    this.dom.memeModal.classList.remove("hidden");
+    if (this.dom.memeModal) this.dom.memeModal.classList.remove("hidden");
 
+    this.autoDismissDuration = 1250;
     const bar = this.dom.dismissBar;
-    bar.style.transition = 'none';
-    bar.style.width = '100%';
-    setTimeout(() => {
-      bar.style.transition = `width ${this.autoDismissDuration}ms linear`;
-      bar.style.width = '0%';
-    }, 20);
+    if (bar) {
+      bar.style.transition = 'none';
+      bar.style.width = '100%';
+      setTimeout(() => {
+        bar.style.transition = `width ${this.autoDismissDuration}ms linear`;
+        bar.style.width = '0%';
+      }, 20);
+    }
 
     this.autoDismissTimer = setTimeout(() => {
       this.dismissMeme();
@@ -1458,7 +1479,9 @@ class UnifiedTypingGame {
       this.dom.explHackVal.textContent = item.strategyTip || item.goldenTip?.memoryHack || "Dự đoán từ loại trước chỗ trống rồi mới scan dẫn chứng!";
     }
 
-    this.dom.btnSaveNotebook.textContent = "⭐ ĐÃ LƯU VÀO SỔ TAY";
+    if (this.dom.btnSaveNotebook) {
+      this.dom.btnSaveNotebook.textContent = "⭐ ĐÃ LƯU VÀO SỔ TAY";
+    }
     this.dom.explanationModal.classList.remove("hidden");
   }
 
@@ -2919,10 +2942,12 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     });
 
     // Save Notebook Button trong Modal
-    this.dom.btnSaveNotebook.addEventListener("click", () => {
-      this.autoSaveTipToNotebook(this.currentChallenge);
-      this.dom.btnSaveNotebook.textContent = "✓ ĐÃ LƯU VÀO SỔ TAY";
-    });
+    if (this.dom.btnSaveNotebook) {
+      this.dom.btnSaveNotebook.addEventListener("click", () => {
+        this.autoSaveTipToNotebook(this.currentChallenge);
+        this.dom.btnSaveNotebook.textContent = "✓ ĐÃ LƯU VÀO SỔ TAY";
+      });
+    }
 
     // Peek Button (Mở 1 chữ cái)
     this.dom.btnPeek.addEventListener("click", () => {
@@ -3024,6 +3049,47 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     if (this.dom.btnStopOnlineMusic) {
       this.dom.btnStopOnlineMusic.addEventListener("click", () => {
         this.stopAllMusic();
+      });
+    }
+
+    // Nút Dán Link từ Clipboard
+    if (this.dom.btnPasteOnlineMusic) {
+      this.dom.btnPasteOnlineMusic.addEventListener("click", async () => {
+        try {
+          if (navigator.clipboard && navigator.clipboard.readText) {
+            const text = await navigator.clipboard.readText();
+            if (text && this.dom.onlineMusicUrlInput) {
+              this.dom.onlineMusicUrlInput.value = text.trim();
+              this.dom.onlineMusicUrlInput.focus();
+              if (this.dom.onlineMusicStatusText) {
+                this.dom.onlineMusicStatusText.textContent = "Đã dán link! Bấm 'PHÁT NHẠC' để bắt đầu.";
+              }
+            }
+          } else {
+            if (this.dom.onlineMusicUrlInput) {
+              this.dom.onlineMusicUrlInput.focus();
+              this.dom.onlineMusicUrlInput.select();
+            }
+          }
+        } catch (err) {
+          console.warn("Không thể truy cập Clipboard:", err);
+          if (this.dom.onlineMusicUrlInput) {
+            this.dom.onlineMusicUrlInput.focus();
+          }
+        }
+      });
+    }
+
+    // Nút Xóa Link hiện tại
+    if (this.dom.btnClearOnlineMusic) {
+      this.dom.btnClearOnlineMusic.addEventListener("click", () => {
+        if (this.dom.onlineMusicUrlInput) {
+          this.dom.onlineMusicUrlInput.value = "";
+          this.dom.onlineMusicUrlInput.focus();
+          if (this.dom.onlineMusicStatusText) {
+            this.dom.onlineMusicStatusText.textContent = "Đã xóa link. Hãy dán link bài hát mới!";
+          }
+        }
       });
     }
 

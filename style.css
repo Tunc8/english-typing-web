@@ -287,9 +287,18 @@ body {
 .arena-right-pane {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
   justify-content: flex-start;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1.5px solid rgba(99, 102, 241, 0.25);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 24px rgba(99, 102, 241, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  position: relative;
+  transition: all 0.25s ease;
 }
 
 /* Word Hint Card (Mode 1) */
@@ -603,18 +612,19 @@ body {
 
 .meme-card {
   position: relative;
-  width: 90%;
-  max-width: 520px;
-  padding: 22px;
+  width: 270px;
+  max-width: 82vw;
+  padding: 10px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
   background: #0f172a;
-  border: 1px solid var(--border-medium);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  animation: memeScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: default;
+  border: 1.5px solid rgba(99, 102, 241, 0.35);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -10px rgba(0, 0, 0, 0.85), 0 0 24px rgba(99, 102, 241, 0.2);
+  animation: memeScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
 }
 
 @keyframes memeScaleIn {
@@ -623,31 +633,21 @@ body {
 }
 
 .meme-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: none !important;
 }
 
-.meme-badge {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--accent-emerald);
-}
-
+.meme-badge,
 .meme-combo-score {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--accent-amber);
+  display: none !important;
 }
 
 .meme-media-box {
   position: relative;
   width: 100%;
-  height: 290px;
+  height: 160px;
+  max-height: 25vh;
   background: #020617;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
   border: 1px solid var(--border-subtle);
   display: flex;
@@ -661,22 +661,9 @@ body {
   object-fit: contain;
 }
 
-.meme-caption {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: linear-gradient(180deg, transparent 0%, rgba(2, 6, 23, 0.95) 100%);
-  padding: 24px 14px 12px;
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #ffffff;
-}
-
+.meme-caption,
 .meme-word-recap {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
+  display: none !important;
 }
 
 .highlight-word {
@@ -825,25 +812,35 @@ body {
 .special-row .expl-label { color: var(--accent-amber); }
 .special-row .expl-val { color: #fef3c7; font-weight: 500; }
 
+.expl-footer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 6px;
+}
+
 .btn-expl-next {
   width: 100%;
-  padding: 13px;
-  background: var(--accent-primary);
+  max-width: 560px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: #ffffff;
   font-family: 'Outfit', sans-serif;
-  font-size: 0.98rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
-  transition: all 0.15s ease;
+  box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4);
+  transition: all 0.2s ease;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
 .btn-expl-next:hover {
-  background: var(--accent-primary-hover);
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  box-shadow: 0 6px 22px rgba(99, 102, 241, 0.55);
+  transform: translateY(-1px);
 }
 
 /* Bottom Control Bar */
@@ -3927,18 +3924,26 @@ body {
   margin: 0;
 }
 
-.online-music-input-group {
+.online-music-input-box {
   display: flex;
   gap: 10px;
   align-items: stretch;
+  width: 100%;
+}
+
+.online-music-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .online-music-input {
-  flex: 1;
+  width: 100%;
   background: rgba(15, 23, 42, 0.8);
   border: 1.5px solid rgba(236, 72, 153, 0.4);
   border-radius: 10px;
-  padding: 12px 16px;
+  padding: 12px 146px 12px 16px;
   font-size: 0.95rem;
   color: #f8fafc;
   outline: none;
@@ -3949,6 +3954,54 @@ body {
   border-color: #ec4899;
   box-shadow: 0 0 16px rgba(236, 72, 153, 0.35);
   background: rgba(15, 23, 42, 0.95);
+}
+
+.music-input-tools {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-music-tool {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.btn-paste-link {
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.btn-paste-link:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+}
+
+.btn-clear-link {
+  color: #f43f5e;
+  border-color: rgba(244, 63, 94, 0.35);
+  background: rgba(244, 63, 94, 0.12);
+}
+
+.btn-clear-link:hover {
+  background: rgba(244, 63, 94, 0.25);
+  border-color: #f43f5e;
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.35);
 }
 
 .btn-play-music-primary {
@@ -4490,15 +4543,27 @@ body {
    MOBILE NATIVE TYPING SYSTEM (ANTI-JUMP & ANTI-BOUNCE)
    ========================================================================== */
 
-/* Wrapper bao quanh ô chữ */
+/* Wrapper bao quanh ô chữ tạo thành bục gõ phím chuyên nghiệp */
 .word-slots-wrapper {
   position: relative;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 10px 0;
+  padding: 16px 12px;
+  margin: 4px 0;
+  background: rgba(8, 12, 20, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
   cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.word-slots-wrapper:hover,
+.word-slots-wrapper:focus-within {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 16px rgba(99, 102, 241, 0.15);
 }
 
 /* Input ẩn nằm phủ kín 100% diện tích ô chữ
@@ -4724,11 +4789,42 @@ body {
   }
 
   /* 8. Modals on Mobile */
-  .glass-panel {
+  .modal-card.glass-panel,
+  .notebook-card.glass-panel,
+  .explanation-card.glass-panel,
+  .online-music-modal-card.glass-panel {
     max-width: 95vw !important;
     max-height: 90vh !important;
     padding: 14px 10px !important;
     overflow-y: auto !important;
+  }
+
+  .meme-card.glass-panel {
+    width: 270px !important;
+    max-width: 82vw !important;
+    padding: 10px !important;
+    overflow: hidden !important;
+  }
+
+  .arena-right-pane {
+    padding: 14px 10px;
+    border-radius: 14px;
+    gap: 12px;
+  }
+
+  .word-slots-wrapper {
+    padding: 10px 6px;
+    border-radius: 10px;
+  }
+
+  .online-music-input-box {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-play-music-primary {
+    padding: 12px 16px;
+    width: 100%;
   }
 }
 

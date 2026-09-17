@@ -540,19 +540,11 @@
       </div>
     </main>
 
-    <!-- MEME POPUP REACTION (TỰ TẮT SAU 1.8S HOẶC ẤN PHÍM/ENTER TẮT NGAY) -->
+    <!-- MEME POPUP REACTION (NHỎ GỌN, KHÔNG CHỮ CẢM THÁN, TỰ TẮT NHANH) -->
     <div class="meme-modal-overlay hidden" id="memeModal">
       <div class="meme-card glass-panel" id="memeCard">
-        <div class="meme-header">
-          <span class="meme-badge">🎉 CHUẨN ĐÉT!</span>
-          <span class="meme-combo-score" id="memeComboText">+1000 ĐIỂM!</span>
-        </div>
         <div class="meme-media-box">
-          <img id="memeImage" src="" alt="Funny Meme GIF">
-          <div class="meme-caption" id="memeCaption">ĐỈNH NÓC KỊCH TRẦN BAY PHẤP PHỚI!</div>
-        </div>
-        <div class="meme-word-recap" id="memeWordRecap">
-          ĐÁP ÁN: <span class="highlight-word" id="recapWord">DEGRADE</span> ➔ <span id="recapMeaning">Phân rã thành mảnh nhỏ</span>
+          <img id="memeImage" src="" alt="Meme Reaction">
         </div>
         <!-- Sleek Auto-Dismiss Progress Bar -->
         <div class="auto-dismiss-track">
@@ -621,7 +613,6 @@
         </div>
 
         <div class="expl-footer">
-          <button class="btn-save-notebook" id="btnSaveNotebook">⭐ LƯU VÀO SỔ TAY MẸO</button>
           <button class="btn-expl-next" id="btnExplNext">TIẾP TỤC CÂU TIẾP THEO (ENTER) ➔</button>
         </div>
       </div>
@@ -856,14 +847,24 @@
             Dán link <strong>Spotify</strong> (track/playlist/album), <strong>YouTube</strong>, <strong>SoundCloud</strong> hoặc link <strong>MP3</strong> trực tiếp để phát nhạc nền tăng cảm hứng khi gõ phím!
           </p>
 
-          <div class="online-music-input-group">
-            <input 
-              type="text" 
-              id="onlineMusicUrlInput" 
-              class="online-music-input" 
-              placeholder="Dán link Spotify, YouTube (youtu.be/...), SoundCloud hoặc link MP3 vào đây..."
-              spellcheck="false"
-            />
+          <div class="online-music-input-box">
+            <div class="online-music-input-wrapper">
+              <input 
+                type="text" 
+                id="onlineMusicUrlInput" 
+                class="online-music-input" 
+                placeholder="Dán link Spotify, YouTube, SoundCloud hoặc link MP3..."
+                spellcheck="false"
+              />
+              <div class="music-input-tools">
+                <button type="button" class="btn-music-tool btn-paste-link" id="btnPasteOnlineMusic" title="Dán link vừa copy (Clipboard)">
+                  📋 Dán
+                </button>
+                <button type="button" class="btn-music-tool btn-clear-link" id="btnClearOnlineMusic" title="Xóa link cũ">
+                  ✕ Xóa
+                </button>
+              </div>
+            </div>
             <button class="btn-play-music-primary" id="btnPlayOnlineMusic">
               ▶ PHÁT NHẠC
             </button>
