@@ -247,10 +247,18 @@ class UnifiedTypingGame {
       aiStatusPanel: document.getElementById("aiStatusPanel"),
       aiStatusMsg: document.getElementById("aiStatusMsg"),
 
-      // Typing Arena
+      // Typing Arena & Mobile Inputs
       wordSlotsContainer: document.getElementById("wordSlotsContainer"),
       statusMessage: document.getElementById("statusMessage"),
       btnPeek: document.getElementById("btnPeek"),
+      mobileNativeInput: document.getElementById("mobileNativeInput"),
+      mobileTypingToolbar: document.getElementById("mobileTypingToolbar"),
+      btnFocusMobileInput: document.getElementById("btnFocusMobileInput"),
+      btnToggleTouchKeyboard: document.getElementById("btnToggleTouchKeyboard"),
+      virtualTouchKeyboard: document.getElementById("virtualTouchKeyboard"),
+      vkTab: document.getElementById("vkTab"),
+      vkPeek: document.getElementById("vkPeek"),
+      vkKeys: document.querySelectorAll(".vk-key[data-key]"),
 
       // Meme Popup
       memeModal: document.getElementById("memeModal"),
@@ -2592,6 +2600,26 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     });
   }
 
+  // Hàm loại bỏ dấu tiếng Việt (Telex/VNI) để gõ tiếng Anh trơn tru trên điện thoại
+  removeVietnameseTones(str) {
+    if (!str) return "";
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    str = str.replace(/đ/g, "d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+  }
+
   // --- EVENT LISTENERS ---
   initEventListeners() {
     window.addEventListener("keydown", (e) => {
@@ -2660,12 +2688,118 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
         return;
       }
 
-      // 6. Gõ phím A-Z
-      const key = e.key.toUpperCase();
+      // 6. Gõ phím A-Z (Tự động chuyển dấu tiếng Việt Telex/VNI về chữ cái tiếng Anh)
+      const key = this.removeVietnameseTones(e.key).toUpperCase();
       if (/^[A-Z]$/.test(key)) {
         this.handleLetterPress(key);
       }
     });
+
+    // --- MOBILE TYPING & ON-SCREEN VIRTUAL KEYBOARD LISTENERS ---
+    // 1. Nhận ký tự gõ từ bàn phím ảo điện thoại (iOS / Android)
+    if (this.dom.mobileNativeInput) {
+      this.dom.mobileNativeInput.addEventListener("input", (e) => {
+        let raw = e.target.value || "";
+        if (!raw && e.data) raw = e.data;
+        if (raw) {
+          const clean = this.removeVietnameseTones(raw).toUpperCase();
+          for (let char of clean) {
+            if (/^[A-Z]$/.test(char)) {
+              this.handleLetterPress(char);
+            }
+          }
+        }
+        this.dom.mobileNativeInput.value = "";
+      });
+
+      this.dom.mobileNativeInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.code === "Space") {
+          if (this.isMemeActive) {
+            e.preventDefault();
+            this.dismissMeme();
+            return;
+          }
+          if (!this.dom.explanationModal.classList.contains("hidden")) {
+            e.preventDefault();
+            this.advanceNextQuestion();
+            return;
+          }
+        }
+        if (e.key === "Tab") {
+          e.preventDefault();
+          this.speakCurrentItem();
+          return;
+        }
+        const key = this.removeVietnameseTones(e.key).toUpperCase();
+        if (/^[A-Z]$/.test(key)) {
+          this.handleLetterPress(key);
+        }
+      });
+    }
+
+    // 2. Chạm vào ô chữ cái để kích hoạt bàn phím ảo điện thoại
+    if (this.dom.wordSlotsContainer) {
+      this.dom.wordSlotsContainer.addEventListener("click", () => {
+        if (this.dom.mobileNativeInput) {
+          this.dom.mobileNativeInput.focus();
+        }
+      });
+    }
+
+    // 3. Nút bật bàn phím máy
+    if (this.dom.btnFocusMobileInput) {
+      this.dom.btnFocusMobileInput.addEventListener("click", () => {
+        if (this.dom.mobileNativeInput) {
+          this.dom.mobileNativeInput.focus();
+        }
+      });
+    }
+
+    // 4. Nút bật / tắt bàn phím cảm ứng trên màn hình (On-Screen Touch Keyboard)
+    if (this.dom.btnToggleTouchKeyboard) {
+      this.dom.btnToggleTouchKeyboard.addEventListener("click", () => {
+        if (this.dom.virtualTouchKeyboard) {
+          this.dom.virtualTouchKeyboard.classList.toggle("hidden");
+          const isShown = !this.dom.virtualTouchKeyboard.classList.contains("hidden");
+          this.dom.btnToggleTouchKeyboard.classList.toggle("active", isShown);
+        }
+      });
+    }
+
+    // 5. Các phím bấm cảm ứng A-Z trên On-Screen Keyboard
+    if (this.dom.vkKeys) {
+      this.dom.vkKeys.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const key = btn.dataset.key;
+          if (key) {
+            if (navigator.vibrate) {
+              try { navigator.vibrate(15); } catch(err) {}
+            }
+            this.handleLetterPress(key);
+          }
+        });
+      });
+    }
+
+    // 6. Phím TAB & PEEK trên On-Screen Keyboard
+    if (this.dom.vkTab) {
+      this.dom.vkTab.addEventListener("click", () => {
+        this.speakCurrentItem();
+      });
+    }
+    if (this.dom.vkPeek) {
+      this.dom.vkPeek.addEventListener("click", () => {
+        this.peekOneLetter();
+      });
+    }
+
+    // Tự động mở bàn phím cảm ứng trên màn hình nếu truy cập bằng thiết bị di động
+    const isMobileScreen = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
+    if (isMobileScreen && this.dom.virtualTouchKeyboard && this.dom.btnToggleTouchKeyboard) {
+      this.dom.virtualTouchKeyboard.classList.remove("hidden");
+      this.dom.btnToggleTouchKeyboard.classList.add("active");
+    }
 
     // Phase Stepper Buttons
     if (this.dom.btnPhase1) this.dom.btnPhase1.addEventListener("click", () => this.switchPhase("phase_1"));

@@ -523,6 +523,67 @@
           <span id="statusMessage">Hãy gõ từng chữ cái để hoàn thành từ!</span>
           <button class="btn-peek" id="btnPeek">👁️ MỞ 1 CHỮ GỢI Ý (+1 PHÍM)</button>
         </div>
+
+        <!-- Mobile Native Input (Ẩn để bắt phím gõ từ bàn phím ảo iOS / Android) -->
+        <input 
+          type="text" 
+          id="mobileNativeInput" 
+          class="mobile-native-input" 
+          autocomplete="off" 
+          autocorrect="off" 
+          autocapitalize="characters" 
+          spellcheck="false" 
+          inputmode="text" 
+          aria-label="Khu vực nhận phím gõ di động" 
+        />
+
+        <!-- Mobile Typing Toolbar (Công cụ gõ phím trên điện thoại) -->
+        <div class="mobile-typing-toolbar" id="mobileTypingToolbar">
+          <button type="button" class="btn-mobile-toolbar" id="btnFocusMobileInput" title="Bật bàn phím ảo của điện thoại để gõ">
+            📱 BẬT BÀN PHÍM ĐIỆN THOẠI
+          </button>
+          <button type="button" class="btn-mobile-toolbar" id="btnToggleTouchKeyboard" title="Bật / Ẩn bàn phím cảm ứng trên màn hình">
+            ⌨️ BÀN PHÍM CẢM ỨNG ON-SCREEN
+          </button>
+        </div>
+
+        <!-- On-Screen Virtual Touch Keyboard (Cyberpunk QWERTY Keypad cho Mobile) -->
+        <div class="virtual-touch-keyboard hidden" id="virtualTouchKeyboard">
+          <div class="vk-row">
+            <button type="button" class="vk-key" data-key="Q">Q</button>
+            <button type="button" class="vk-key" data-key="W">W</button>
+            <button type="button" class="vk-key" data-key="E">E</button>
+            <button type="button" class="vk-key" data-key="R">R</button>
+            <button type="button" class="vk-key" data-key="T">T</button>
+            <button type="button" class="vk-key" data-key="Y">Y</button>
+            <button type="button" class="vk-key" data-key="U">U</button>
+            <button type="button" class="vk-key" data-key="I">I</button>
+            <button type="button" class="vk-key" data-key="O">O</button>
+            <button type="button" class="vk-key" data-key="P">P</button>
+          </div>
+          <div class="vk-row">
+            <button type="button" class="vk-key" data-key="A">A</button>
+            <button type="button" class="vk-key" data-key="S">S</button>
+            <button type="button" class="vk-key" data-key="D">D</button>
+            <button type="button" class="vk-key" data-key="F">F</button>
+            <button type="button" class="vk-key" data-key="G">G</button>
+            <button type="button" class="vk-key" data-key="H">H</button>
+            <button type="button" class="vk-key" data-key="J">J</button>
+            <button type="button" class="vk-key" data-key="K">K</button>
+            <button type="button" class="vk-key" data-key="L">L</button>
+          </div>
+          <div class="vk-row">
+            <button type="button" class="vk-key vk-key-action" id="vkTab" title="Phát âm câu">🔊 CÂU</button>
+            <button type="button" class="vk-key" data-key="Z">Z</button>
+            <button type="button" class="vk-key" data-key="X">X</button>
+            <button type="button" class="vk-key" data-key="C">C</button>
+            <button type="button" class="vk-key" data-key="V">V</button>
+            <button type="button" class="vk-key" data-key="B">B</button>
+            <button type="button" class="vk-key" data-key="N">N</button>
+            <button type="button" class="vk-key" data-key="M">M</button>
+            <button type="button" class="vk-key vk-key-action" id="vkPeek" title="Mở 1 chữ gợi ý">👁️ GỢI Ý</button>
+          </div>
+        </div>
       </div>
     </main>
 

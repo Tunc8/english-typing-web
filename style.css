@@ -4408,6 +4408,383 @@ body {
   line-height: 1.35;
 }
 
+/* ==========================================================================
+   MOBILE TYPING SUITE & TOUCH ON-SCREEN KEYBOARD
+   ========================================================================== */
+
+/* Mobile Typing Toolbar */
+.mobile-typing-toolbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-mobile-toolbar {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.15);
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.btn-mobile-toolbar:hover,
+.btn-mobile-toolbar.active {
+  background: rgba(56, 189, 248, 0.2);
+  color: #ffffff;
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+  transform: translateY(-1px);
+}
+
+.mobile-native-input {
+  position: absolute;
+  opacity: 0.01;
+  pointer-events: auto;
+  width: 1px;
+  height: 1px;
+  top: 0;
+  left: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+/* Virtual Touch Keyboard (Cyberpunk On-Screen QWERTY) */
+.virtual-touch-keyboard {
+  margin: 12px auto 6px auto;
+  max-width: 620px;
+  width: 100%;
+  background: rgba(11, 15, 25, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 10px 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7), 0 0 20px rgba(56, 189, 248, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.vk-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+
+.vk-key {
+  flex: 1;
+  min-width: 0;
+  max-width: 52px;
+  height: 46px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: #f8fafc;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  transition: all 0.1s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+
+.vk-key:active {
+  background: #38bdf8;
+  color: #0b0f19;
+  border-color: #ffffff;
+  transform: scale(0.92);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+}
+
+.vk-key-action {
+  flex: 1.6;
+  max-width: 82px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  letter-spacing: 0.5px;
+}
+
+.vk-key-action:active {
+  background: #38bdf8;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   FULL RESPONSIVE SYSTEM FOR MOBILE & TABLET (< 768px & < 480px)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* 1. Master Page & Stage */
+  body {
+    padding: 4px 2px;
+  }
+
+  .stage-container {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    border-radius: 12px;
+    border: none;
+    padding-bottom: 90px;
+    box-shadow: none;
+  }
+
+  /* 2. HUD Header */
+  .hud-header {
+    flex-direction: column;
+    padding: 10px 8px;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .hud-box {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+
+  .header-title {
+    font-size: 0.82rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.6rem;
+  }
+
+  /* Mode Tab Bar */
+  .mode-tab-bar {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .phase-mode-group {
+    flex-wrap: nowrap;
+    width: max-content;
+    gap: 6px;
+  }
+
+  .mode-tab-btn {
+    font-size: 0.72rem;
+    padding: 7px 10px;
+    white-space: nowrap;
+  }
+
+  /* Header Actions & Score */
+  .hud-actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .score-pill {
+    padding: 5px 10px;
+    font-size: 0.82rem;
+  }
+
+  .btn-hud-action {
+    font-size: 0.72rem;
+    padding: 5px 8px;
+  }
+
+  /* 3. Phase Stepper Bar */
+  .phase-stepper-bar {
+    margin: 6px 4px;
+    gap: 6px;
+  }
+
+  .phase-step-btn {
+    padding: 8px 10px;
+  }
+
+  .phase-step-title {
+    font-size: 0.8rem;
+  }
+
+  .phase-step-desc {
+    font-size: 0.62rem;
+  }
+
+  /* 4. Filter Bars & Chips */
+  .filter-group-bar,
+  .it-subfilter-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding: 4px 6px;
+    width: 100%;
+    scrollbar-width: none;
+  }
+
+  .filter-chip-btn,
+  .it-chip {
+    white-space: nowrap;
+    font-size: 0.7rem;
+    padding: 5px 8px;
+    flex-shrink: 0;
+  }
+
+  /* 5. Question & Context Cards */
+  .milestone-header-card {
+    padding: 10px 12px;
+    margin: 6px 4px;
+  }
+
+  .card-module {
+    padding: 12px 10px;
+    margin: 6px 4px;
+  }
+
+  .story-context-box,
+  .dictation-desc {
+    font-size: 0.92rem;
+    line-height: 1.5;
+    padding: 10px 10px;
+  }
+
+  .speak-btn-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-tts-action {
+    width: 100%;
+    min-height: 44px;
+    font-size: 0.8rem;
+    justify-content: center;
+  }
+
+  /* 6. Word Slots Responsive */
+  .word-slots-container {
+    gap: 5px;
+    padding: 8px 2px;
+  }
+
+  .slot {
+    width: 36px;
+    height: 48px;
+    border-radius: 8px;
+  }
+
+  .slot-char {
+    font-size: 1.35rem;
+  }
+
+  .slot-sub {
+    font-size: 0.55rem;
+  }
+
+  /* Status Bar */
+  .status-bar {
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .btn-peek {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+
+  /* 7. Virtual Touch Keyboard Mobile Adjustments */
+  .virtual-touch-keyboard {
+    padding: 6px 3px;
+    border-radius: 12px;
+    max-width: 100%;
+  }
+
+  .vk-key {
+    height: 42px;
+    font-size: 1.05rem;
+    border-radius: 6px;
+  }
+
+  .vk-key-action {
+    font-size: 0.68rem;
+    padding: 0 4px;
+  }
+
+  /* 8. Floating Music Widget on Mobile */
+  .floating-music-widget {
+    bottom: 8px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+    max-width: calc(100vw - 16px);
+    border-radius: 14px;
+  }
+
+  .floating-music-widget.minimized {
+    width: auto;
+  }
+
+  /* 9. Modals on Mobile */
+  .glass-panel {
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    padding: 14px 10px !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (max-width: 440px) {
+  .slot {
+    width: 28px;
+    height: 40px;
+    border-radius: 6px;
+  }
+
+  .slot-char {
+    font-size: 1.15rem;
+  }
+
+  .slot-sub {
+    display: none;
+  }
+
+  .vk-key {
+    height: 38px;
+    font-size: 0.95rem;
+  }
+
+  .vk-key-action {
+    font-size: 0.62rem;
+  }
+}
+
 
 
 
