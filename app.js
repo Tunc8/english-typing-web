@@ -53,13 +53,18 @@ class UnifiedTypingGame {
     this.autoDismissDuration = 1600;
     this.audioCtx = null;
     this.bgmPlaying = false;
-    this.currentMusicType = "none"; // 'youtube', 'soundcloud', 'html5', 'none'
+    this.isBgmDucked = false;
+    this.currentMusicType = "none"; // 'youtube', 'soundcloud', 'spotify', 'html5', 'none'
     this.ytPlayer = null;
     this.scWidget = null;
+    this.spotifyEmbedController = null;
     this.isYtReady = false;
     this.currentTrackTitle = "Chưa phát";
     this.bgmVolume = 0.7;
     this.pendingYtVideoId = null;
+    this.ttsUtteranceSeq = 0;
+    this.activeUtterance = null;
+    this.ttsResumeSafetyTimer = null;
 
     // 7. Text-To-Speech (Web Speech API)
     this.speechSynth = window.speechSynthesis;
@@ -349,16 +354,29 @@ class UnifiedTypingGame {
 
     if (!clean) return;
 
-    // 1. TẮT NHẠC NỀN TỨC THỜI TRONG LÚC PHÁT ÂM CÂU
+    // Đánh số thứ tự phiên đọc để triệt tiêu tình trạng 2 âm nhập nhằng khi gõ nhanh
+    this.ttsUtteranceSeq = (this.ttsUtteranceSeq || 0) + 1;
+    const currentSeq = this.ttsUtteranceSeq;
+
+    if (this.ttsResumeSafetyTimer) {
+      clearTimeout(this.ttsResumeSafetyTimer);
+      this.ttsResumeSafetyTimer = null;
+    }
+
+    // 1. TẮT NHẠC NỀN TỨC THỜI (MUTE 0ms) TRONG LÚC PHÁT ÂM CÂU
     let wasMusicPlaying = false;
     if (this.bgmPlaying) {
       wasMusicPlaying = true;
+      this.isBgmDucked = true;
       this.pauseBgmTemporary();
     }
 
-    this.speechSynth.cancel(); // Dừng câu trước nếu đang đọc dở
+    try {
+      this.speechSynth.cancel(); // Dừng câu trước nếu đang đọc dở
+    } catch (e) {}
 
     const utterance = new SpeechSynthesisUtterance(clean);
+    this.activeUtterance = utterance; // Ngăn V8 garbage collection huỷ onend
     if (this.selectedVoice) {
       utterance.voice = this.selectedVoice;
     }
@@ -366,10 +384,19 @@ class UnifiedTypingGame {
     utterance.rate = rate; // Đọc với tốc độ vừa phải, rõ khẩu hình
     utterance.pitch = 1.0;
 
-    // Hàm khôi phục lại nhạc nền sau khi đọc xong hoặc có lỗi
+    // Hàm khôi phục lại nhạc nền sau khi đọc xong
     const restoreMusic = () => {
-      if (wasMusicPlaying && this.bgmPlaying) {
-        this.resumeBgmTemporary();
+      // Chỉ khôi phục nếu phiên đọc này vẫn là mới nhất và không có câu nào đang nói
+      if (this.ttsUtteranceSeq !== currentSeq) return;
+      if (this.speechSynth && this.speechSynth.speaking) return;
+
+      if (wasMusicPlaying && this.bgmPlaying && this.isBgmDucked) {
+        this.isBgmDucked = false;
+        setTimeout(() => {
+          if (this.ttsUtteranceSeq === currentSeq && this.bgmPlaying && !this.isBgmDucked) {
+            this.resumeBgmTemporary();
+          }
+        }, 120);
       }
     };
 
@@ -377,11 +404,28 @@ class UnifiedTypingGame {
       restoreMusic();
     };
 
-    utterance.onerror = () => {
+    utterance.onerror = (e) => {
+      // Nếu bị interrupted / canceled bởi câu sau, TUYỆT ĐỐI không khôi phục nhạc ở đây
+      if (e && (e.error === 'interrupted' || e.error === 'canceled')) {
+        return;
+      }
       restoreMusic();
     };
 
-    this.speechSynth.speak(utterance);
+    // Safety fallback: Đảm bảo nhạc luôn bật lại sau khi hết thời gian ước tính nếu trình duyệt nuốt onend
+    const estimatedDurationMs = Math.max(1600, Math.ceil((clean.length / 12) * 1000 / rate) + 600);
+    this.ttsResumeSafetyTimer = setTimeout(() => {
+      if (this.ttsUtteranceSeq === currentSeq && this.isBgmDucked) {
+        restoreMusic();
+      }
+    }, estimatedDurationMs);
+
+    try {
+      this.speechSynth.speak(utterance);
+    } catch (err) {
+      console.warn("SpeechSynthesis error:", err);
+      restoreMusic();
+    }
   }
 
   speakCurrentItem() {
@@ -2821,32 +2865,28 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       });
     }
 
-    // Preset Buttons Click (Gợi ý nhạc 1-click)
-    const presetButtons = document.querySelectorAll(".preset-music-btn");
-    presetButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const url = btn.dataset.url;
-        const title = btn.dataset.title || btn.textContent.trim();
-        if (this.dom.onlineMusicUrlInput) {
-          this.dom.onlineMusicUrlInput.value = url;
-        }
-        this.playOnlineMusic(url, title);
+    // Close Spotify Widget Button
+    const closeSpotifyBtn = document.getElementById("btnCloseSpotifyWidget");
+    if (closeSpotifyBtn) {
+      closeSpotifyBtn.addEventListener("click", () => {
+        const widget = document.getElementById("spotifyFloatingWidget");
+        if (widget) widget.classList.add("hidden");
       });
-    });
+    }
 
     // Audio BGM Toggle (Bật / Tắt Nhạc Nền)
     this.dom.btnAudioToggle.addEventListener("click", () => {
       this.toggleBgm();
     });
 
-    // Volume Slider (Đồng bộ âm lượng cho cả YouTube, SoundCloud & MP3)
+    // Volume Slider (Đồng bộ âm lượng cho cả YouTube, Spotify, SoundCloud & MP3)
     this.dom.volSlider.addEventListener("input", (e) => {
       const val = parseFloat(e.target.value);
       this.setBgmVolume(val);
     });
   }
 
-  // --- ONLINE BACKGROUND MUSIC MANAGER (YOUTUBE / SOUNDCLOUD / MP3) ---
+  // --- ONLINE BACKGROUND MUSIC MANAGER (SPOTIFY / YOUTUBE / SOUNDCLOUD / MP3) ---
   initOnlineMusic() {
     // 1. Phục hồi volume đã lưu
     const savedVol = localStorage.getItem("antigravity_bgm_volume");
@@ -2874,6 +2914,11 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
         this.pendingYtVideoId = null;
       }
     };
+
+    // 4. Đăng ký hook cho Spotify iFrame API sẵn sàng
+    window.onSpotifyIframeApiReady = (IFrameAPI) => {
+      window.SpotifyIframeApi = IFrameAPI;
+    };
   }
 
   extractYouTubeId(url) {
@@ -2887,6 +2932,21 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     return url && (url.includes("soundcloud.com/") || url.includes("on.soundcloud.com/"));
   }
 
+  extractSpotifyInfo(url) {
+    if (!url) return null;
+    // URL web: https://open.spotify.com/(intl-xx/)?(track|playlist|album|artist|episode)/([a-zA-Z0-9]+)
+    const webMatch = url.match(/open\.spotify\.com\/(?:intl-[a-z]+\/)?(track|playlist|album|artist|episode)\/([a-zA-Z0-9]+)/);
+    if (webMatch) {
+      return { type: webMatch[1], id: webMatch[2], uri: `spotify:${webMatch[1]}:${webMatch[2]}` };
+    }
+    // URI spotify:track:...
+    const uriMatch = url.match(/spotify:(track|playlist|album|artist|episode):([a-zA-Z0-9]+)/);
+    if (uriMatch) {
+      return { type: uriMatch[1], id: uriMatch[2], uri: `spotify:${uriMatch[1]}:${uriMatch[2]}` };
+    }
+    return null;
+  }
+
   playOnlineMusic(rawUrl, customTitle = null) {
     if (!rawUrl) return;
     const url = rawUrl.trim();
@@ -2896,17 +2956,29 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       this.audioCtx.resume();
     }
 
+    const spotifyInfo = this.extractSpotifyInfo(url);
     const ytId = this.extractYouTubeId(url);
     const isSc = this.isSoundCloudUrl(url);
 
     let detectedTitle = customTitle;
 
-    if (ytId) {
+    if (spotifyInfo) {
+      // --- XỬ LÝ SPOTIFY ---
+      if (!detectedTitle) detectedTitle = `Spotify (${spotifyInfo.type.toUpperCase()})`;
+      this.currentMusicType = "spotify";
+      this.pauseHtml5Audio();
+      this.pauseYouTube();
+      this.pauseSoundCloud();
+      this.playSpotify(spotifyInfo);
+    } else if (ytId) {
       // --- XỬ LÝ YOUTUBE ---
       if (!detectedTitle) detectedTitle = `YouTube (${ytId})`;
       this.currentMusicType = "youtube";
       this.pauseHtml5Audio();
       this.pauseSoundCloud();
+      this.pauseSpotify();
+      const spotifyWidget = document.getElementById("spotifyFloatingWidget");
+      if (spotifyWidget) spotifyWidget.classList.add("hidden");
       this.playYouTube(ytId);
     } else if (isSc) {
       // --- XỬ LÝ SOUNDCLOUD ---
@@ -2914,6 +2986,9 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       this.currentMusicType = "soundcloud";
       this.pauseHtml5Audio();
       this.pauseYouTube();
+      this.pauseSpotify();
+      const spotifyWidget = document.getElementById("spotifyFloatingWidget");
+      if (spotifyWidget) spotifyWidget.classList.add("hidden");
       this.playSoundCloud(url);
     } else {
       // --- XỬ LÝ LINK MP3 / AUDIO STREAM ---
@@ -2924,6 +2999,9 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       this.currentMusicType = "html5";
       this.pauseYouTube();
       this.pauseSoundCloud();
+      this.pauseSpotify();
+      const spotifyWidget = document.getElementById("spotifyFloatingWidget");
+      if (spotifyWidget) spotifyWidget.classList.add("hidden");
       this.playHtml5Audio(url);
     }
 
@@ -2937,6 +3015,32 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
 
     localStorage.setItem("antigravity_bgm_url", url);
     localStorage.setItem("antigravity_bgm_title", detectedTitle);
+  }
+
+  playSpotify(spotifyInfo) {
+    const widget = document.getElementById("spotifyFloatingWidget");
+    const body = document.getElementById("spotifyWidgetBody");
+    if (!widget || !body) return;
+
+    widget.classList.remove("hidden");
+    const embedUrl = `https://open.spotify.com/embed/${spotifyInfo.type}/${spotifyInfo.id}?utm_source=generator&theme=0`;
+    body.innerHTML = `<iframe id="spotifyIframe" style="border-radius:10px" src="${embedUrl}" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+
+    // Tích hợp Spotify iFrame Controller nếu có
+    if (window.SpotifyIframeApi) {
+      try {
+        window.SpotifyIframeApi.createController(body, {
+          uri: spotifyInfo.uri,
+          width: '100%',
+          height: 152
+        }, (EmbedController) => {
+          this.spotifyEmbedController = EmbedController;
+          EmbedController.play();
+        });
+      } catch (e) {
+        console.warn("Spotify Iframe API error:", e);
+      }
+    }
   }
 
   playYouTube(videoId) {
@@ -2954,6 +3058,7 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     if (this.ytPlayer && typeof this.ytPlayer.loadVideoById === "function") {
       try {
         this.ytPlayer.loadVideoById({ videoId: videoId });
+        this.ytPlayer.unMute();
         this.ytPlayer.setVolume(this.bgmVolume * 100);
         this.ytPlayer.playVideo();
         return;
@@ -2973,12 +3078,17 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
           loop: 1,
           playlist: videoId,
           controls: 0,
-          playsinline: 1
+          playsinline: 1,
+          enablejsapi: 1,
+          origin: window.location.origin || "http://localhost"
         },
         events: {
           onReady: (event) => {
-            event.target.setVolume(this.bgmVolume * 100);
-            event.target.playVideo();
+            try {
+              event.target.unMute();
+              event.target.setVolume(this.bgmVolume * 100);
+              event.target.playVideo();
+            } catch (e) {}
           },
           onStateChange: (event) => {
             if (event.data === YT.PlayerState.PLAYING) {
@@ -3024,26 +3134,110 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
     if (!this.dom.customAudioElem) return;
     this.dom.customAudioElem.src = url;
     this.dom.customAudioElem.volume = this.bgmVolume;
+    this.dom.customAudioElem.muted = false;
     this.dom.customAudioElem.play().catch(e => {
       console.warn("HTML5 audio playback err:", e);
     });
   }
 
   pauseYouTube() {
-    if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === "function") {
-      try { this.ytPlayer.pauseVideo(); } catch (e) {}
+    if (this.ytPlayer) {
+      try {
+        if (typeof this.ytPlayer.mute === "function") this.ytPlayer.mute();
+        if (typeof this.ytPlayer.setVolume === "function") this.ytPlayer.setVolume(0);
+        if (typeof this.ytPlayer.pauseVideo === "function") this.ytPlayer.pauseVideo();
+      } catch (e) {}
+    }
+    const iframe = document.querySelector("#youtubePlayerContainer iframe");
+    if (iframe && iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "mute", args: [] }), "*");
+        iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "pauseVideo", args: [] }), "*");
+      } catch (e) {}
+    }
+  }
+
+  resumeYouTube() {
+    if (this.ytPlayer) {
+      try {
+        if (typeof this.ytPlayer.unMute === "function") this.ytPlayer.unMute();
+        if (typeof this.ytPlayer.setVolume === "function") this.ytPlayer.setVolume(this.bgmVolume * 100);
+        if (typeof this.ytPlayer.playVideo === "function") this.ytPlayer.playVideo();
+      } catch (e) {}
+    }
+    const iframe = document.querySelector("#youtubePlayerContainer iframe");
+    if (iframe && iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "unMute", args: [] }), "*");
+        iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "setVolume", args: [this.bgmVolume * 100] }), "*");
+        iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "playVideo", args: [] }), "*");
+      } catch (e) {}
     }
   }
 
   pauseSoundCloud() {
-    if (this.scWidget && typeof this.scWidget.pause === "function") {
-      try { this.scWidget.pause(); } catch (e) {}
+    if (this.scWidget) {
+      try {
+        if (typeof this.scWidget.setVolume === "function") this.scWidget.setVolume(0);
+        if (typeof this.scWidget.pause === "function") this.scWidget.pause();
+      } catch (e) {}
+    }
+  }
+
+  resumeSoundCloud() {
+    if (this.scWidget) {
+      try {
+        if (typeof this.scWidget.setVolume === "function") this.scWidget.setVolume(this.bgmVolume * 100);
+        if (typeof this.scWidget.play === "function") this.scWidget.play();
+      } catch (e) {}
+    }
+  }
+
+  pauseSpotify() {
+    if (this.spotifyEmbedController) {
+      try {
+        this.spotifyEmbedController.pause();
+      } catch (e) {}
+    }
+    const iframe = document.querySelector("#spotifyWidgetBody iframe");
+    if (iframe && iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage({ command: "pause" }, "*");
+      } catch (e) {}
+    }
+  }
+
+  resumeSpotify() {
+    if (this.spotifyEmbedController) {
+      try {
+        this.spotifyEmbedController.resume();
+      } catch (e) {}
+    }
+    const iframe = document.querySelector("#spotifyWidgetBody iframe");
+    if (iframe && iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage({ command: "resume" }, "*");
+        iframe.contentWindow.postMessage({ command: "play" }, "*");
+      } catch (e) {}
     }
   }
 
   pauseHtml5Audio() {
     if (this.dom.customAudioElem) {
-      this.dom.customAudioElem.pause();
+      try {
+        this.dom.customAudioElem.muted = true;
+        this.dom.customAudioElem.pause();
+      } catch (e) {}
+    }
+  }
+
+  resumeHtml5Audio() {
+    if (this.dom.customAudioElem && this.dom.customAudioElem.src) {
+      try {
+        this.dom.customAudioElem.muted = false;
+        this.dom.customAudioElem.volume = this.bgmVolume;
+        this.dom.customAudioElem.play().catch(() => {});
+      } catch (e) {}
     }
   }
 
@@ -3052,6 +3246,8 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       this.pauseYouTube();
     } else if (this.currentMusicType === "soundcloud") {
       this.pauseSoundCloud();
+    } else if (this.currentMusicType === "spotify") {
+      this.pauseSpotify();
     } else if (this.currentMusicType === "html5") {
       this.pauseHtml5Audio();
     }
@@ -3059,29 +3255,29 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
 
   resumeBgmTemporary() {
     if (this.currentMusicType === "youtube") {
-      if (this.ytPlayer && typeof this.ytPlayer.playVideo === "function") {
-        try { this.ytPlayer.playVideo(); } catch (e) {}
-      }
+      this.resumeYouTube();
     } else if (this.currentMusicType === "soundcloud") {
-      if (this.scWidget && typeof this.scWidget.play === "function") {
-        try { this.scWidget.play(); } catch (e) {}
-      }
+      this.resumeSoundCloud();
+    } else if (this.currentMusicType === "spotify") {
+      this.resumeSpotify();
     } else if (this.currentMusicType === "html5") {
-      if (this.dom.customAudioElem && this.dom.customAudioElem.src) {
-        this.dom.customAudioElem.play().catch(() => {});
-      }
+      this.resumeHtml5Audio();
     }
   }
 
   stopAllMusic() {
     this.pauseYouTube();
     this.pauseSoundCloud();
+    this.pauseSpotify();
     this.pauseHtml5Audio();
     this.bgmPlaying = false;
+    this.isBgmDucked = false;
     if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "▶ BẬT NHẠC";
     if (this.dom.onlineMusicStatusText) {
       this.dom.onlineMusicStatusText.innerHTML = "⏹ Đã dừng phát nhạc.";
     }
+    const spotifyWidget = document.getElementById("spotifyFloatingWidget");
+    if (spotifyWidget) spotifyWidget.classList.add("hidden");
   }
 
   toggleBgm() {
@@ -3093,26 +3289,27 @@ BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG JSON MẢNG (Array of Objects) nh�
       this.stopAllMusic();
     } else {
       if (this.currentMusicType === "youtube") {
-        if (this.ytPlayer && typeof this.ytPlayer.playVideo === "function") {
-          this.ytPlayer.playVideo();
-          this.bgmPlaying = true;
-          this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
-          return;
-        }
+        this.resumeYouTube();
+        this.bgmPlaying = true;
+        if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+        return;
       } else if (this.currentMusicType === "soundcloud") {
-        if (this.scWidget && typeof this.scWidget.play === "function") {
-          this.scWidget.play();
-          this.bgmPlaying = true;
-          this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
-          return;
-        }
+        this.resumeSoundCloud();
+        this.bgmPlaying = true;
+        if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+        return;
+      } else if (this.currentMusicType === "spotify") {
+        this.resumeSpotify();
+        this.bgmPlaying = true;
+        const spotifyWidget = document.getElementById("spotifyFloatingWidget");
+        if (spotifyWidget) spotifyWidget.classList.remove("hidden");
+        if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+        return;
       } else if (this.currentMusicType === "html5") {
-        if (this.dom.customAudioElem && this.dom.customAudioElem.src) {
-          this.dom.customAudioElem.play().catch(() => {});
-          this.bgmPlaying = true;
-          this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
-          return;
-        }
+        this.resumeHtml5Audio();
+        this.bgmPlaying = true;
+        if (this.dom.btnAudioToggle) this.dom.btnAudioToggle.textContent = "⏸ TẮT NHẠC";
+        return;
       }
 
       // Nếu chưa có bài nào phát, thử lấy từ ô input hoặc mở modal
